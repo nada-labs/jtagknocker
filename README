@@ -1,0 +1,34 @@
+JtagKnocker
+ Yet another JTAG finder and enumerator, targeted for the ST STM32 development 
+ board. Why? Because I don't have an arduino and I don't want to buy dedicated 
+ hardware.
+ 
+ The documentation is currently breif, because I trust that you know how to 
+ solder, connect wires and how various interfaces work. If you don't, you 
+ probably shouldn't by trying to play with JTAG.
+
+Requirements
+ An ARM GCC toolchain. (arm-none-eabi- assumed by default) 
+ 
+Building
+ TBD
+ 
+Usage
+ Wire port D pins to each pin to test on the target board, starting at PD0.
+ If you don't want to damage the target board and/or the STM32, place 330 ohm
+ resistors in series with each connection to limit current to 10mA.
+ 
+ Connect the development board to a serial interface and open up a 
+ terminal. Hit Enter to get a prompt.
+ 
+ The folling commands are valid:
+  help			Displays this list of valid commands.
+  scan			Scans for a JTAG interface. Will take some time.
+  				Asks several questions before exceuting.
+  chain			Once a valid interface is detected, scans the chain and
+  				determines the properities of the devices.
+  irenum (n)	Enumerates valid ir commands for device (n) on the chain.
+  				(n) is assumed to be all devices if left out.
+  config		Configure the JTAG port, if the interface pinout is known.
+  
+ 
