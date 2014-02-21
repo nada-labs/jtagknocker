@@ -31,6 +31,6 @@ void main()
 
 	}
 
-	//whoops, we dropped out of the mail loop
+	//whoops, we dropped out of the main loop
 	while(true);
 }
