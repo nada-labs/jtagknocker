@@ -8,7 +8,6 @@ include $(TOOLCHAIN_DIR)/ld/Makefile.linker
 OBJS = jtag.o main.o 
 
 $(BINARY): $(OBJS) $(LDSCRIPT)
-	$(LD) $(LDFLAGS) -o $@ $(OBJS)
-
+	$(LD) -o $@ $(OBJS) $(LDFLAGS) 
 clean:
-	@rm -rf *.o $(LDSCRIPT) $(BINARY)
+	@rm -rf *.o $(BINARY)
