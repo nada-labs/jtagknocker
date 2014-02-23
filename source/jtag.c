@@ -18,6 +18,7 @@
 
 #include <stdint.h>
 #include <libopencm3/stm32/gpio.h>
+#include <libopencm3/stm32/rcc.h>
 #include "jtag.h"
 
 #define JTAG_PIN_NOT_ALLOCATED (16U)
@@ -43,6 +44,8 @@ void jtag_Init()
 	GPIOD_OSPEEDR = 0x00000000;
 	GPIOD_PUPDR = 0x00000000;
 	GPIOD_BSRR = 0xFFFF0000;
+	RCC_AHBENR |= 0x00100000;	//Enable GPIOD clock
+
 }
 
 /**
