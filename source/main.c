@@ -16,14 +16,24 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <libopencm3/stm32/gpio.h>
+#include <libopencm3/stm32/usart.h>
+#include <libopencm3/stm32/rcc.h>
 #include "jtag.h"
+#include "serial.h"
 
 /**
  * Development board entry point
  */
 void main()
 {
+	const char message[] = "JTAG Knocker\r\n";
+
 	//setup
+	rcc_clock_setup_hsi(&hsi_8mhz[CLOCK_64MHZ]);
+	serial_Init();
+
+	serial_Send(message, sizeof(message)-1);
 
 	//processing
 	while(true)
@@ -32,5 +42,16 @@ void main()
 	}
 
 	//whoops, we dropped out of the main loop
+	while(true); 
+}
+
+void *_sbrk(int incr)
+{
+	return((void*)(-1));
+}
+
+void _exit(int v)
+{
+	serial_Write("\r\n_exit(%i) called. Halting\r\n", v);
 	while(true);
 }

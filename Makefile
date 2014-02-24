@@ -17,7 +17,7 @@ OBJDUMP = $(PREFIX)-objdump
 GDB = $(PREFIX)-gdb
 
 CFLAGS += -c -I$(TOOLCHAIN_DIR)/include
-LDFLAGS += -L$(TOOLCHAIN_DIR)/lib -T$(LDSCRIPT) -nostdlib
+LDFLAGS += -L$(TOOLCHAIN_DIR)/lib -T$(LDSCRIPT)
 
 TOOLCHAIN_DIR ?= $(shell pwd)/libopencm3
 BUILD_DIR = 

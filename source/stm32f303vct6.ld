@@ -53,16 +53,22 @@ SECTIONS
  } >ram AT >rom
  _data_loadaddr = LOADADDR(.data);
  .bss : {
+  __bss_start__ = .;
   *(.bss*)
   *(COMMON)
   . = ALIGN(4);
   _ebss = .;
+  __bss_end__ = .;
  } >ram
  .ccm : {
   *(.ccmram*)
   . = ALIGN(4);
  } >ccm
- /DISCARD/ : { *(.eh_frame) }
+ .= ALIGN(4);
+ .eh_frame : 
+ { 
+  KEEP (*(.eh_frame))
+ } > ram
  . = ALIGN(4);
  end = .;
 }
