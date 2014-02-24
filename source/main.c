@@ -20,6 +20,7 @@
 #include <libopencm3/stm32/usart.h>
 #include <libopencm3/stm32/rcc.h>
 #include "jtag.h"
+#include "jtagtap.h"
 #include "serial.h"
 
 /**
@@ -28,12 +29,13 @@
 void main()
 {
 	const char message[] = "JTAG Knocker\r\n";
+	unsigned int count;
 
 	//setup
 	rcc_clock_setup_hsi(&hsi_8mhz[CLOCK_64MHZ]);
 	serial_Init();
-
-	serial_Send(message, sizeof(message)-1);
+	jtag_Init();
+	jtagTAP_Init();
 
 	//processing
 	while(true)

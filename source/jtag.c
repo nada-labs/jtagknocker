@@ -108,3 +108,25 @@ void jtag_Set(jtag_Pin pin, bool val)
 		}
 	}
 }
+
+/**
+ * @brief Toggles the JTAG clock
+ *
+ */
+void jtag_Clock()
+{
+	unsigned int cnt;
+	jtag_Set(JTAG_PIN_TCK, true);
+	
+	for(cnt = 4000; cnt > 0; --cnt)
+	{
+		__asm("nop");
+	}
+
+	jtag_Set(JTAG_PIN_TCK, false);
+
+	for(cnt = 4000; cnt > 0; --cnt)
+	{
+		__asm("nop");
+	}
+}

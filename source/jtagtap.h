@@ -15,24 +15,30 @@
  *   You should have received a copy of the GNU General Public License
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#if !defined(_JTAG_H_)
-#define _JTAG_H_
+#if !defined(_JTAGTAP_H_)
+#define _JTAGTAP_H_
 
-#include <stdbool.h>
+typedef enum jtagTAP_eTAPState {
+	JTAGTAP_STATE_UNKNOWN = 0,
+	JTAGTAP_STATE_RESET,
+	JTAGTAP_STATE_IDLE,
+	JTAGTAP_STATE_DR_SCAN,
+	JTAGTAP_STATE_DR_CAPTURE,
+	JTAGTAP_STATE_DR_SHIFT,
+	JTAGTAP_STATE_DR_EXIT1,
+	JTAGTAP_STATE_DR_PAUSE,
+	JTAGTAP_STATE_DR_EXIT2,
+	JTAGTAP_STATE_DR_UPDATE,
+	JTAGTAP_STATE_IR_SCAN,
+	JTAGTAP_STATE_IR_CAPTURE,
+	JTAGTAP_STATE_IR_SHIFT,
+	JTAGTAP_STATE_IR_EXIT1,
+	JTAGTAP_STATE_IR_PAUSE,
+	JTAGTAP_STATE_IR_EXIT2,
+	JTAGTAP_STATE_IR_UPDATE,
+} jtagTAP_TAPState;
 
-typedef enum jtag_ePin
-{
-	JTAG_PIN_TCK = 0,
-	JTAG_PIN_TMS,
-	JTAG_PIN_TDI,
-	JTAG_PIN_TDO,
-	JTAG_PIN_MAX
-} jtag_Pin;
-
-extern void jtag_Init();
-
-extern void jtag_Cfg(jtag_Pin pin, unsigned int num);
-extern void jtag_Set(jtag_Pin pin, bool val);
-extern void jtag_Clock();
+void jtagTAP_Init();
+void jtagTAP_SetState(jtagTAP_TAPState target);
 
 #endif
