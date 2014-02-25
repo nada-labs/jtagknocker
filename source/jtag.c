@@ -21,8 +21,6 @@
 #include <libopencm3/stm32/rcc.h>
 #include "jtag.h"
 
-#define JTAG_PIN_NOT_ALLOCATED (16U)
-
 static unsigned int jtag_Pins[JTAG_PIN_MAX];
 
 /**
@@ -68,16 +66,33 @@ void jtag_Cfg(jtag_Pin pin, unsigned int num)
 			num = JTAG_PIN_NOT_ALLOCATED;
 		}
 
-		jtag_Pins[pin] = num;
-
 		if(num != JTAG_PIN_NOT_ALLOCATED)
 		{
+			//Deconfigure the old pin if allocated
+			if(jtag_Pins[pin] != JTAG_PIN_NOT_ALLOCATED)
+			{
+				mask_and = 3 << (jtag_Pins[pin] * 2);
+				GPIOD_MODER = (GPIOD_MODER & ~mask_and);
+			}
+
 			//Configure the IO port mode
 			mask_and = 3 << (num * 2);
 			mask_or = (pin == JTAG_PIN_TDO) ? 0 : 1;
 			mask_or = mask_or << (num * 2);
 			GPIOD_MODER = (GPIOD_MODER & ~mask_and) | mask_or;
 		}
+		else
+		{
+			//Configure the pin as an input
+			unsigned int old_pin = jtag_Pins[pin];
+			if(old_pin != JTAG_PIN_NOT_ALLOCATED)
+			{
+				mask_and = 3 << (old_pin * 2);
+				GPIOD_MODER = (GPIOD_MODER & ~mask_and);
+			}
+
+		}
+		jtag_Pins[pin] = num;	//set the allocation
 	}
 }
 

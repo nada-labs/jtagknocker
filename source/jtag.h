@@ -19,6 +19,7 @@
 #define _JTAG_H_
 
 #include <stdbool.h>
+#define JTAG_PIN_NOT_ALLOCATED (16U)
 
 typedef enum jtag_ePin
 {
