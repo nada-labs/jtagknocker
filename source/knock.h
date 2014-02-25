@@ -15,43 +15,8 @@
  *   You should have received a copy of the GNU General Public License
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#if !defined(_KNOCK_H_)
+#define _KNOCK_H_
 
-#include <libopencm3/stm32/gpio.h>
-#include <libopencm3/stm32/usart.h>
-#include <libopencm3/stm32/rcc.h>
-#include "jtag.h"
-#include "jtagtap.h"
-#include "serial.h"
-#include "knock.h"
-
-/**
- * Development board entry point
- */
-void main()
-{
-
-	//setup
-	rcc_clock_setup_hsi(&hsi_8mhz[CLOCK_64MHZ]);
-	serial_Init();
-
-	knock_Knock();
-	//processing
-	while(true)
-	{
-
-	}
-
-	//whoops, we dropped out of the main loop
-	while(true); 
-}
-
-void *_sbrk(int incr)
-{
-	return((void*)(-1));
-}
-
-void _exit(int v)
-{
-	serial_Write("\r\n_exit(%i) called. Halting\r\n", v);
-	while(true);
-}
+void knock_Knock();
+#endif
