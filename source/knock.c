@@ -28,11 +28,13 @@
 
 static uint16_t knock_ScanIDCode();
 static void knock_ScanIDCodeTDI(unsigned int tck, unsigned int tms, uint16_t pins);
+static void knock_ScanIR(unsigned int tck, unsigned int tms);
 
 static uint16_t knock_Result[KNOCK_RESULTS];
 static unsigned int knock_Results;
-static unsigned int knock_PinCount;
 
+static const unsigned int knock_PinCount = 8;
+static const unsigned int knock_IRShiftCount = 100;
 /**
  * @brief Attempts to determine if a device is attached via JTAG
  *
@@ -199,7 +201,7 @@ void knock_Knock()
 
 	serial_Write("JTAG Knocker\r\n");
 
-	knock_PinCount = 8;	//number of pins we're using
+//	knock_PinCount = 4;	//number of pins we're using
 
 	for(tck = 0; tck < knock_PinCount; ++tck)
 	{
@@ -220,9 +222,95 @@ void knock_Knock()
 					//we found what looks like an id code on at least one of the lines
 					//see if we can recover TDI
 					knock_ScanIDCodeTDI(tck, tms, pins);
-				}
+				} 
+
+				knock_ScanIR(tck, tms);
 			}
 		}
 	}	
 	serial_Write("Done.\r\n");
+}
+
+/**
+ * @brief Scan for JTAG ports by looking for a IR register
+ *
+ * @param[in] tck The pin TCK is on
+ * @param[in] tms The pin TMS is on
+ */
+void knock_ScanIR(unsigned int tck, unsigned int tms)
+{
+	unsigned int tdi, tdo;
+	unsigned int count;
+
+	for(tdi = 0; tdi < knock_PinCount; ++tdi)
+	{
+		if((tdi != tck) && (tdi !=tms))
+		{
+			uint16_t tdo_candidates;
+			int tdo_change_clocks[16];
+			jtag_Init();
+			jtagTAP_SetState(JTAGTAP_STATE_UNKNOWN);
+
+			jtag_Cfg(JTAG_PIN_TCK, tck);
+			jtag_Cfg(JTAG_PIN_TMS, tms);
+
+			//we can use this pin
+			jtag_Cfg(JTAG_PIN_TDI, tdi);
+			jtag_Set(JTAG_PIN_TDI, true);	//set the pin to a known state
+
+			//put the JTAG TAP into a known state
+			jtagTAP_SetState(JTAGTAP_STATE_UNKNOWN);
+			jtagTAP_SetState(JTAGTAP_STATE_IR_SHIFT);
+
+			for(count = 0; count < knock_IRShiftCount; ++count)
+			{
+				jtag_Clock();
+			}
+			tdo_candidates = GPIOD_IDR;	//any pin which is set here and changes to 
+							//0 once and stays there is probably TDO
+	
+			jtag_Set(JTAG_PIN_TDI, false);
+			for(count = 0; count < 16; ++count)
+			{
+				tdo_change_clocks[count] = 0;
+			}
+
+			for(count = 1; count < knock_IRShiftCount; ++count)
+			{
+				uint16_t tdo_sample ;
+				jtag_Clock();
+
+				tdo_sample = GPIOD_IDR;
+
+				for(tdo = 0; tdo < knock_PinCount; ++tdo)
+				{
+					//check if this is a candidate pin and not in use
+					if((tdo != tck) && (tdo != tms) && (tdo != tdi) && ((tdo_candidates & (1 << tdo)) != 0))
+					{
+						if((tdo_sample & (1 << tdo)) == 0)
+						{
+							//the pin went low, this is good
+							if(tdo_change_clocks[tdo] == 0)
+							{
+								tdo_change_clocks[tdo] = count;
+							}
+						}
+						else if(tdo_change_clocks[tdo] > 0)
+						{
+							//it had gone low, but went high. damn.
+							tdo_change_clocks[tdo] = -1;
+						}
+					} 
+				}
+			} 
+
+			for(tdo = 0; tdo < knock_PinCount; ++tdo)
+			{
+				if(tdo_change_clocks[tdo] >= 2)
+				{
+					serial_Write("[!] Potential Chain: TCK: %i TMS: %i TDO: %i TDI: %i IR Len: %i\r\n", tck, tms, tdo, tdi, tdo_change_clocks[tdo]);
+				}
+			}
+		}
+	}
 }
