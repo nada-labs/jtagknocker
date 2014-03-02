@@ -138,7 +138,7 @@ bool jtag_Get(jtag_Pin pin)
 	if(pinNum != JTAG_PIN_NOT_ALLOCATED)
 	{
 		//read the pin state from the input register
-		pinState = ((GPIOD_IDR & (1 << pin)) != 0);
+		pinState = ((GPIOD_IDR & (1 << pinNum)) != 0);
 	}
 
 	return pinState;
