@@ -125,6 +125,26 @@ void jtag_Set(jtag_Pin pin, bool val)
 }
 
 /**
+ *@brief Retruns the state of one of the JTAG signals
+ *
+ *@retval true pin is high
+ *@retval false pin is low
+ */
+bool jtag_Get(jtag_Pin pin)
+{
+	unsigned int pinNum = jtag_Pins[pin];
+	bool pinState = false;
+
+	if(pinNum != JTAG_PIN_NOT_ALLOCATED)
+	{
+		//read the pin state from the input register
+		pinState = ((GPIOD_IDR & (1 << pin)) != 0);
+	}
+
+	return pinState;
+}
+
+/**
  * @brief Toggles the JTAG clock
  *
  */
@@ -133,14 +153,14 @@ void jtag_Clock()
 	unsigned int cnt;
 	jtag_Set(JTAG_PIN_TCK, true);
 	
-	for(cnt = 20000; cnt > 0; --cnt)
+	for(cnt = 8000; cnt > 0; --cnt)
 	{
 		__asm("nop");
 	}
 
 	jtag_Set(JTAG_PIN_TCK, false);
 
-	for(cnt = 20000; cnt > 0; --cnt)
+	for(cnt = 8000; cnt > 0; --cnt)
 	{
 		__asm("nop");
 	}

@@ -27,6 +27,7 @@ typedef enum jtag_ePin
 	JTAG_PIN_TMS,
 	JTAG_PIN_TDI,
 	JTAG_PIN_TDO,
+	JTAG_PIN_TRST,
 	JTAG_PIN_MAX
 } jtag_Pin;
 
@@ -34,6 +35,7 @@ extern void jtag_Init();
 
 extern void jtag_Cfg(jtag_Pin pin, unsigned int num);
 extern void jtag_Set(jtag_Pin pin, bool val);
+extern bool jtag_Get(jtag_Pin pin);
 extern void jtag_Clock();
 
 #endif
