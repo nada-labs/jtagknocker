@@ -15,8 +15,15 @@
  *   You should have received a copy of the GNU General Public License
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#if !defined(_KNOCK_H_)
-#define _KNOCK_H_
+#if !defined(_CHAIN_H_)
+#define _CHAIN_H_
 
-extern void knock_Knock();
+#include <stdbool.h>
+
+#define CHAIN_MAX_DEVICES		(20)	///< Maximum number of devices in a chain supported
+#define CHAIN_MAX_IRLEN			(CHAIN_MAX_DEVICES * 32)	///< Maximum chain IR length supported for autodetection
+
+extern void chain_Init();
+extern bool chain_Detect();
+
 #endif

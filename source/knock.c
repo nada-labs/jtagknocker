@@ -19,6 +19,7 @@
 #include "jtagtap.h"
 #include "knock.h"
 #include "serial.h"
+#include "chain.h"
 #include <stdint.h>
 
 #include <libopencm3/stm32/gpio.h>	//for IO port access
@@ -33,7 +34,7 @@ static void knock_ScanIR(unsigned int tck, unsigned int tms);
 static uint16_t knock_Result[KNOCK_RESULTS];
 static unsigned int knock_Results;
 
-static const unsigned int knock_PinCount = 8;
+static const unsigned int knock_PinCount = 4;
 static const unsigned int knock_IRShiftCount = 100;
 /**
  * @brief Attempts to determine if a device is attached via JTAG
@@ -174,7 +175,9 @@ static void knock_ScanIDCodeTDI(unsigned int tck, unsigned int tms, uint16_t pin
 
 					if(changes == 1)
 					{
-						serial_Write("Potential Chain: TCK: %i TMS: %i TDO: %i TDI: %i\r\n", tck, tms, tdo, tdi);
+						serial_Write("[!] Potential Chain: TCK: %i TMS: %i TDO: %i TDI: %i\r\n", tck, tms, tdo, tdi);
+						jtag_Cfg(JTAG_PIN_TDO, tdo);
+						chain_Detect();
 					}
 
 					//reset the pin state and clock again, undoing what we just did
@@ -184,6 +187,7 @@ static void knock_ScanIDCodeTDI(unsigned int tck, unsigned int tms, uint16_t pin
 						jtag_Clock();	
 					}
 					jtag_Cfg(JTAG_PIN_TDI, JTAG_PIN_NOT_ALLOCATED);
+					jtag_Cfg(JTAG_PIN_TDO, JTAG_PIN_NOT_ALLOCATED);
 				}
 			}
 
@@ -197,11 +201,9 @@ static void knock_ScanIDCodeTDI(unsigned int tck, unsigned int tms, uint16_t pin
  */
 void knock_Knock()
 {
-	unsigned int tck = 0, tms = 1;
+	unsigned int tck, tms;
 
 	serial_Write("JTAG Knocker\r\n");
-
-//	knock_PinCount = 4;	//number of pins we're using
 
 	for(tck = 0; tck < knock_PinCount; ++tck)
 	{
@@ -308,9 +310,21 @@ void knock_ScanIR(unsigned int tck, unsigned int tms)
 			{
 				if(tdo_change_clocks[tdo] >= 2)
 				{
-					serial_Write("[!] Potential Chain: TCK: %i TMS: %i TDO: %i TDI: %i IR Len: %i\r\n", tck, tms, tdo, tdi, tdo_change_clocks[tdo]);
+					serial_Write("[!] Potential Chain: TCK: %i TMS: %i TDO: %i TDI: %i\r\n", tck, tms, tdo, tdi);
+					jtag_Cfg(JTAG_PIN_TDO, tdo);
+					chain_Detect();
+					jtag_Cfg(JTAG_PIN_TDO, JTAG_PIN_NOT_ALLOCATED);
 				}
 			}
+
+			//we may have found a chain, put it back into bypass
+			//LX4F120HQ5R locks up with an IR full of 0
+			jtag_Set(JTAG_PIN_TDI, true);	//set the pin to a known state
+			for(count = 0; count < knock_IRShiftCount; ++count)
+			{
+				jtag_Clock();
+			}
+
 		}
 	}
 }
