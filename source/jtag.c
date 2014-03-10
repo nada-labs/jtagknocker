@@ -77,7 +77,7 @@ void jtag_Cfg(jtag_Pin pin, unsigned int num)
 
 			//Configure the IO port mode
 			mask_and = 3 << (num * 2);
-			mask_or = (pin == JTAG_PIN_TDO) ? 0 : 1;
+			mask_or = ((pin == JTAG_PIN_TDO) || (pin == JTAG_PIN_RTCK)) ? 0 : 1;	//Input or output?
 			mask_or = mask_or << (num * 2);
 			GPIOD_MODER = (GPIOD_MODER & ~mask_and) | mask_or;
 		}
@@ -106,7 +106,7 @@ void jtag_Set(jtag_Pin pin, bool val)
 {
 	unsigned int pinNum;
 
-	if((pin >= JTAG_PIN_TCK) && (pin < JTAG_PIN_MAX) && (pin != JTAG_PIN_TDO))
+	if((pin >= JTAG_PIN_TCK) && (pin < JTAG_PIN_MAX) && !((pin == JTAG_PIN_TDO) || (pin == JTAG_PIN_RTCK)))
 	{
 		pinNum = jtag_Pins[pin];
 

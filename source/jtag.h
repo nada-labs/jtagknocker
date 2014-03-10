@@ -28,6 +28,8 @@ typedef enum jtag_ePin
 	JTAG_PIN_TDI,
 	JTAG_PIN_TDO,
 	JTAG_PIN_TRST,
+	JTAG_PIN_SRST,
+	JTAG_PIN_RTCK,
 	JTAG_PIN_MAX
 } jtag_Pin;
 
