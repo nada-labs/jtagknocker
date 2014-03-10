@@ -27,37 +27,40 @@
 #define KNOCK_RESULTS		(1024)		///< Number of results to store per run (max)
 #define KNOCK_UNCHANGED		(48)		///< Number of results to store for unchanging inputs, has to be longer than an ID CODE
 
-static uint16_t knock_ScanIDCode();
-static void knock_ScanIDCodeTDI(unsigned int tck, unsigned int tms, uint16_t pins);
-static void knock_ScanIR(unsigned int tck, unsigned int tms);
+static void knock_ScanReset(unsigned int tck, unsigned int tms);
+static void knock_ScanResetFindTDI(unsigned int tck, unsigned int tms, uint16_t pins, uint16_t tdi_state, unsigned int nresuts);
+static void knock_ScanBypass(unsigned int tck, unsigned int tms);
 
-static uint16_t knock_Result[KNOCK_RESULTS];
-static unsigned int knock_Results;
-
-static const unsigned int knock_PinCount = 4;
+//configuration information
+static unsigned int knock_PinCount;
 static const unsigned int knock_IRShiftCount = 100;
+
 /**
  * @brief Attempts to determine if a device is attached via JTAG
- *
- * The JTAG pins need to have been previously defined through jtag_Cfg()
  *
  * For the provided pin combination, this function will reset the tap and scan
  * out the data register, either getting an ID CODE, a BYPASS or garbage. It
  * will attempt to analyse the results to see if it's a valid result.
  *
- * @retval true A valid combination was detected for the specified TCK and TMS
+ * @param[in] tck The pin the TCK signal is on, for scanning
+ * @param[in] tms The pin the TMS signal is on, for scanning
  */
-static uint16_t knock_ScanIDCode()
+static void knock_ScanReset(unsigned int tck, unsigned int tms)
 {
 	unsigned int count;
 	int unchanged_count = -1;	//the first time through always results in a unchanged count
 	uint16_t data, data_changed = 0x0000;
 	uint16_t prev_data;
 	uint16_t data_interesting = 0x0000;
+	uint16_t scan_results[KNOCK_RESULTS];
+
+	jtag_Init();
+	jtag_Cfg(JTAG_PIN_TCK, tck);
+	jtag_Cfg(JTAG_PIN_TMS, tms);
 
 	jtagTAP_SetState(JTAGTAP_STATE_UNKNOWN);
 	jtagTAP_SetState(JTAGTAP_STATE_DR_SHIFT);
-
+	
 	prev_data = GPIOD_IDR;
 	for(count = 0; count < KNOCK_RESULTS; ++count)
 	{
@@ -67,7 +70,7 @@ static uint16_t knock_ScanIDCode()
 
 		prev_data = data;
 
-		knock_Result[count] = data;
+		scan_results[count] = data;
 
 		jtag_Clock();
 
@@ -83,7 +86,6 @@ static uint16_t knock_ScanIDCode()
 			unchanged_count = 0;	//something changed, reset the count.
 		}
 	}
-	knock_Results = count;
 
 	if(data_interesting != 0)
 	{
@@ -100,7 +102,7 @@ static uint16_t knock_ScanIDCode()
 
 				for(index = 0; index < count; ++index)
 				{
-					if((((knock_Result[index] >> bit) & 0x01) == 1) && (count - index >= 32))
+					if((((scan_results[index] >> bit) & 0x01) == 1) && (count - index >= 32))
 					{
 						//this could be a potential ID CODE, get it
 						uint32_t idcode = 0x80000000;
@@ -108,7 +110,7 @@ static uint16_t knock_ScanIDCode()
 						while(++index < code_end)
 						{
 							idcode >>= 1;
-							idcode |= ((knock_Result[index] >> bit) & 0x01) << 31;
+							idcode |= ((scan_results[index] >> bit) & 0x01) << 31;
 						}
 						if((idcode != 0xFFFFFFFF))
 						{
@@ -120,12 +122,12 @@ static uint16_t knock_ScanIDCode()
 
 			}
 		}
+		knock_ScanResetFindTDI(tck, tms, data_interesting, scan_results[count-1], count);
 	}
-	return data_interesting;
 }
 
 /**
- * @brief Try to find TDI
+ * @brief Try to find TDI given a list of potential TDOs
  *
  * Based on the scan results and a list of interesting pins, which could be
  * TDO, try and find TDI.
@@ -136,11 +138,11 @@ static uint16_t knock_ScanIDCode()
  * @param[in] tck The pin that TCK is on.
  * @param[in] tms The pin that TMS is on.
  * @param[in] pins A bitmask of potential TDOs.
- *
+ * @param[in] tdi_state The current state of all pins.
+ * @param[in] nresults The number of results in the scan_results array.
  */
-static void knock_ScanIDCodeTDI(unsigned int tck, unsigned int tms, uint16_t pins)
+static void knock_ScanResetFindTDI(unsigned int tck, unsigned int tms, uint16_t pins, uint16_t tdi_state, unsigned int nresuts)
 {
-	uint16_t tdi_state = knock_Result[knock_Results - 1];
 	unsigned int tdo;
 
 	for(tdo = 0; tdo < knock_PinCount; ++tdo)
@@ -161,7 +163,7 @@ static void knock_ScanIDCodeTDI(unsigned int tck, unsigned int tms, uint16_t pin
 					jtag_Cfg(JTAG_PIN_TDI, tdi);
 					jtag_Set(JTAG_PIN_TDI, ((tdi_state >> tdi) & 1) == 0);	//toggle the TDI pin
 					
-					for(clocks = 0; clocks < knock_Results; ++clocks)
+					for(clocks = 0; clocks < nresuts; ++clocks)
 					{
 						unsigned int tdo_val = (GPIOD_IDR & (1 << tdo));
 						jtag_Clock();
@@ -173,6 +175,13 @@ static void knock_ScanIDCodeTDI(unsigned int tck, unsigned int tms, uint16_t pin
 						prev_tdo_val = tdo_val;
 					}
 
+					//reset the pin state and clock again, undoing what we just did
+					jtag_Set(JTAG_PIN_TDI, ((tdi_state >> tdi) & 1) == 1);	//toggle the TDI pin
+					for(clocks = 0; clocks < nresuts; ++clocks)
+					{
+						jtag_Clock();	
+					}
+
 					if(changes == 1)
 					{
 						serial_Write("[!] Potential Chain: TCK: %i TMS: %i TDO: %i TDI: %i\r\n", tck, tms, tdo, tdi);
@@ -180,66 +189,24 @@ static void knock_ScanIDCodeTDI(unsigned int tck, unsigned int tms, uint16_t pin
 						chain_Detect();
 					}
 
-					//reset the pin state and clock again, undoing what we just did
-					jtag_Set(JTAG_PIN_TDI, ((tdi_state >> tdi) & 1) == 1);	//toggle the TDI pin
-					for(clocks = 0; clocks < knock_Results; ++clocks)
-					{
-						jtag_Clock();	
-					}
 					jtag_Cfg(JTAG_PIN_TDI, JTAG_PIN_NOT_ALLOCATED);
 					jtag_Cfg(JTAG_PIN_TDO, JTAG_PIN_NOT_ALLOCATED);
 				}
 			}
-
 		}
 	}
 }
 
 /**
- * @brief Try and find a JTAG chain
- *
- */
-void knock_Knock()
-{
-	unsigned int tck, tms;
-
-	serial_Write("JTAG Knocker\r\n");
-
-	for(tck = 0; tck < knock_PinCount; ++tck)
-	{
-		for(tms = 0; tms < knock_PinCount; ++tms)
-		{
-			if(tck != tms)
-			{
-				uint16_t pins;
-				//reset the TAP for this test
-				jtag_Init();
-				jtagTAP_SetState(JTAGTAP_STATE_UNKNOWN);
-
-				jtag_Cfg(JTAG_PIN_TCK, tck);
-				jtag_Cfg(JTAG_PIN_TMS, tms);
-				pins = knock_ScanIDCode();
-				if(pins != 0)
-				{
-					//we found what looks like an id code on at least one of the lines
-					//see if we can recover TDI
-					knock_ScanIDCodeTDI(tck, tms, pins);
-				} 
-
-				knock_ScanIR(tck, tms);
-			}
-		}
-	}	
-	serial_Write("Done.\r\n");
-}
-
-/**
  * @brief Scan for JTAG ports by looking for a IR register
+ *
+ * Guesses at TDI and sets the TAP into BYPASS mode. Sends some clocks and
+ * looks to see if one of the inputs starts low and then goes high.
  *
  * @param[in] tck The pin TCK is on
  * @param[in] tms The pin TMS is on
  */
-void knock_ScanIR(unsigned int tck, unsigned int tms)
+static void knock_ScanBypass(unsigned int tck, unsigned int tms)
 {
 	unsigned int tdi, tdo;
 	unsigned int count;
@@ -251,7 +218,6 @@ void knock_ScanIR(unsigned int tck, unsigned int tms)
 			uint16_t tdo_candidates;
 			int tdo_change_clocks[16];
 			jtag_Init();
-			jtagTAP_SetState(JTAGTAP_STATE_UNKNOWN);
 
 			jtag_Cfg(JTAG_PIN_TCK, tck);
 			jtag_Cfg(JTAG_PIN_TMS, tms);
@@ -324,7 +290,42 @@ void knock_ScanIR(unsigned int tck, unsigned int tms)
 			{
 				jtag_Clock();
 			}
-
 		}
 	}
 }
+
+/**
+ * @brief Try and find a JTAG chain
+ *
+ * @param[in] mode The scanning mode to use, see #ref knock_Mode
+ * @param[in] pins The number of pins that are wired up, must be >= 4
+ */
+void knock_Scan(knock_Mode mode, unsigned int pins)
+{
+	unsigned int tck, tms;
+	knock_PinCount = pins;
+
+	serial_Write("Scanning in reset mode...\r\n");
+
+	for(tck = 0; tck < knock_PinCount; ++tck)
+	{
+		for(tms = 0; tms < knock_PinCount; ++tms)
+		{
+			if(tck != tms)
+			{
+				switch(mode)
+				{
+					case KNOCK_MODE_RESET:
+						knock_ScanReset(tck, tms);
+						break;
+
+					case KNOCK_MODE_BYPASS:
+						knock_ScanBypass(tck, tms);
+						break;
+				}
+			}
+		}
+	}	
+	serial_Write("...Done.\r\n");
+}
+

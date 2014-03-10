@@ -18,5 +18,10 @@
 #if !defined(_KNOCK_H_)
 #define _KNOCK_H_
 
-extern void knock_Knock();
+typedef enum knock_eMode {
+	KNOCK_MODE_RESET,		///< Use TAP Reset to try and find a chain
+	KNOCK_MODE_BYPASS,		///< Use BYPASS instruction to try and find a chain
+} knock_Mode;
+
+extern void knock_Scan(knock_Mode mode, unsigned int Pins);
 #endif
