@@ -38,12 +38,7 @@ void cmd_Init()
  */
 void cmd_Process(char *Buffer, unsigned int Length)
 {
-	int token;
-	yy_scan_buffer(Buffer, Length);
-	while((token == yylex()) != 0)
-	{
-		serial_Write(" %i\r\n", token);
-	}
+
 }
 
 /**
