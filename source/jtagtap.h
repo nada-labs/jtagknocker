@@ -36,9 +36,13 @@ typedef enum jtagTAP_eTAPState {
 	JTAGTAP_STATE_IR_PAUSE,
 	JTAGTAP_STATE_IR_EXIT2,
 	JTAGTAP_STATE_IR_UPDATE,
+	JTAGTAP_STATE_MAX,
 } jtagTAP_TAPState;
+
+extern const char * const jtagTAP_StateNames[JTAGTAP_STATE_MAX];
 
 void jtagTAP_Init();
 void jtagTAP_SetState(jtagTAP_TAPState target);
+jtagTAP_TAPState jtagTAP_GetState();
 
 #endif

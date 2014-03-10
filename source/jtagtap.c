@@ -20,6 +20,30 @@
 
 static jtagTAP_TAPState TAPState;	//<< Holds the current state of the TAP
 
+const char * const jtagTAP_StateNames[JTAGTAP_STATE_MAX] = {
+	[JTAGTAP_STATE_UNKNOWN] = "Unknown",
+	[JTAGTAP_STATE_RESET] = "Reset",
+	[JTAGTAP_STATE_IDLE] = "Run/Idle",
+	[JTAGTAP_STATE_DR_SCAN] = "Scan DR",
+	[JTAGTAP_STATE_DR_CAPTURE] = "Capture DR",
+	[JTAGTAP_STATE_DR_SHIFT] = "Shift DR",
+	[JTAGTAP_STATE_DR_EXIT1] = "Exit 1 DR",
+	[JTAGTAP_STATE_DR_PAUSE] = "Pause DR",
+	[JTAGTAP_STATE_DR_EXIT2] = "Exit 2 DR", 
+	[JTAGTAP_STATE_DR_UPDATE] = "Update DR",
+	[JTAGTAP_STATE_IR_SCAN] = "Scan IR",
+	[JTAGTAP_STATE_IR_CAPTURE] = "Capture IR",
+	[JTAGTAP_STATE_IR_SHIFT] = "Shift IR",
+	[JTAGTAP_STATE_IR_EXIT1] = "Exit 1 IR",
+	[JTAGTAP_STATE_IR_PAUSE] = "Pause IR",
+	[JTAGTAP_STATE_IR_EXIT2] = "Exit 2 IR",
+	[JTAGTAP_STATE_IR_UPDATE] = "Update IR"
+};
+
+/**
+ * @brief Initalize the TAP module
+ *
+ */
 void jtagTAP_Init()
 {
 	TAPState = JTAGTAP_STATE_UNKNOWN;
@@ -234,4 +258,13 @@ void jtagTAP_SetState(jtagTAP_TAPState target)
 	{
 		TAPState = JTAGTAP_STATE_UNKNOWN;
 	}
+}
+
+/**
+ * @brief Get the current state of the TAP
+ *
+ */
+jtagTAP_TAPState jtagTAP_GetState()
+{
+	return TAPState;
 }
