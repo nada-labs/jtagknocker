@@ -1,0 +1,26 @@
+CC = $(PREFIX)-gcc
+LD = $(PREFIX)-gcc
+OBJCOPY = $(PREFIX)-objcopy
+OBJDUMP = $(PREFIX)-objdump
+GDB = $(PREFIX)-gdb
+LEX = flex
+YACC = bison
+
+CFLAGS += -c -I$(TOOLCHAIN_DIR)/include -O2 -ffunction-sections
+LDFLAGS += -L$(TOOLCHAIN_DIR)/lib -T$(LDSCRIPT) -gc-sections
+
+TOOLCHAIN_DIR ?= $(TOP_DIR)/libopencm3
+BUILD_DIR = 
+
+%.o:%.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+
+%.c: %.y
+%.c: %.l
+
+%.yy.c: %.l
+	flex -o $@ --header-file=$(patsubst %.c,%.h,$@) --noyy_scan_string --noyy_scan_bytes $<
+
+%.tab.c %.tab.h: %.y
+	bison -d $<
