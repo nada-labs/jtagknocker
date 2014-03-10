@@ -51,7 +51,7 @@ Usage
 	Can only be called after a chain scan has been performed, see the 
 	chain command.
 
-  config [tck|tms|tdi|tdo|trst|srst|rclk [pin]]
+  config [tck|tms|tdi|tdo|trst|srst|rtck [pin]]
 	Displays the pin number the signal is configured to, assigning if pin
 	is provided.
 	The config command by itself will return the current pin assignments
@@ -63,14 +63,17 @@ Usage
 	  TDO		4
 	Specifing a pin of 0 deconfigures the signal.
   
-  clock [rate|adaptave]
+  config clock [rate|adaptive]
 	Displays the JTAG clock speed, setting it to rate if provided.
 	rate is in kHz.
 	Adaptive clocking is only valid when the rclk signal has been 
 	assigned and waits for the TAP to acknowledge the clock transition
 	before moving on.
 
-  tck|tms|tdi|tdo|trst|srst|rclk [state]
+  clock n
+	Toggle the clock line n times.
+
+  tck|tms|tdi|tdo|trst|srst|rtck [state]
 	The current state of the requested signal is to state, if provided, 
 	and displayed. Setting is only valid for outputs (not tdo or rclk).
 	  A state of 1 is logic high, A state of 0 is logic low.
@@ -83,7 +86,7 @@ Usage
 
   debug level
 	Sets the debug message level. 
-	3 max, 0 for no debug messages (default).
+	3 max, 0 for no debug messages, default level is 1.
 
   device [n [idcode|irlen value]]
 	Shows information for devices in the chain, or configures properities
