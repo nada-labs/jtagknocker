@@ -31,7 +31,7 @@ extern int test_Write(const char *fmt, ...);
 #define ASSERT(test, message, ...) do{ 								\
 	if(!test)										\
 	{											\
-		test_Write("%s:%i Test Failed: " message "\n", __FUNCTION__, __LINE__, ##__VA_ARGS__);	\
+		test_Write("%s:%i Test Failed: " message "\r\n", __FUNCTION__, __LINE__, ##__VA_ARGS__);	\
 		return false;										\
 	}											\
 }while(0)
