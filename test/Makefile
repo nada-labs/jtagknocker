@@ -10,7 +10,7 @@ include $(TOOLCHAIN_DIR)/ld/Makefile.linker
 
 CFLAGS += -DTEST
 
-OBJS = test.o
+OBJS = test.o tjtag.o
 
 $(BINARY): $(OBJS) $(LDSCRIPT)
 	$(LD) -o $@ $(OBJS) $(LDFLAGS) 

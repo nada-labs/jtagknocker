@@ -15,26 +15,19 @@
  *   You should have received a copy of the GNU General Public License
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#if !defined(_TEST_H_)
-#define _TEST_H_
+#if !defined(_TJTAG_H_)
+#define _TJTAG_H_
 
-extern int test_Write(const char *fmt, ...);
+#include <stdbool.h>
 
-/**
- * @brief Test an operation and report message
- *
- * If the boolean test is false the provided message and arguments will be 
- * sent to the serial port.
- *
- * @note Assumes all tests return boolean
- */
-#define ASSERT(test, message, ...) do{ 								\
-	if(!(test))										\
-	{											\
-		test_Write("%s:%i Test Failed: " message "\r\n", __FUNCTION__, __LINE__, ##__VA_ARGS__);	\
-		return false;										\
-	}											\
-}while(0)
-
+//Test functions
+extern bool jtag_TestInitSignalAlloc();
+extern bool jtag_TestInitRegisterSetup();
+extern bool jtag_TestSignalConfigSet();
+extern bool jtag_TestSignalConfigSetInput();
+extern bool jtag_TestSignalConfigSetInvalid();
+extern bool jtag_TestSignalConfigUnSet();
+extern bool jtag_TestSignalConfigAlreadySetPin();
+extern bool jtag_TestSignalConfigAlreadySetSig();
 
 #endif

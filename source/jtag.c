@@ -22,6 +22,7 @@
 #include "jtag.h"
 
 static unsigned int jtag_Signals[JTAG_SIGNAL_MAX];
+static unsigned int jtag_PinUsage;		///< Bit mask of the pins used for signals.
 
 /**
  * @brief Initialises the JTAG local variables.

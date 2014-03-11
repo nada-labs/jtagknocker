@@ -23,6 +23,7 @@
 #include "../source/serial.c" 		// Include the C file to get the functions we need without linking against it
 
 //add test include files here
+#include "tjtag.h"
 
 //Function prototypes for testing tests...
 bool test_AssertPass();
@@ -37,6 +38,14 @@ static const test_tFunc test_Functions[] =
 	test_AssertFail,	
 	//Add test functions here
 
+	//JTAG module tests
+	jtag_TestInitSignalAlloc,
+	jtag_TestInitRegisterSetup,
+	jtag_TestSignalConfigSetInput,
+	jtag_TestSignalConfigSetInvalid,
+	jtag_TestSignalConfigUnSet,
+	jtag_TestSignalConfigAlreadySetPin,
+	jtag_TestSignalConfigAlreadySetSig,
 };
 
 #define TESTS (sizeof(test_Functions)/sizeof(test_tFunc))	///< Number of functions in the test
