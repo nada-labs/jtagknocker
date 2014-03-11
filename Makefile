@@ -10,7 +10,7 @@ export PREFIX ?= arm-none-eabi
 export BINARY = jtagknocker
 export TOP_DIR = $(shell pwd)
 
-.PHONY: all clean source
+.PHONY: all clean source test
 
 all: source
 
@@ -19,5 +19,7 @@ source:
 
 clean:
 	@make -C source clean
+	@make -C test clean
 
-
+test:
+	@make -C test
