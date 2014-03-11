@@ -19,7 +19,8 @@
 #define _JTAG_H_
 
 #include <stdbool.h>
-#define JTAG_SIGNAL_NOT_ALLOCATED (16U)
+#define JTAG_SIGNAL_NOT_ALLOCATED	(-1)	///< Flag for deallocating a signal
+#define JTAG_PIN_MAX			(16)	///< Maximum number of signals supported
 
 typedef enum jtag_eSignal
 {
@@ -35,7 +36,7 @@ typedef enum jtag_eSignal
 
 extern void jtag_Init();
 
-extern void jtag_Cfg(jtag_Signal sig, unsigned int num);
+extern void jtag_Cfg(jtag_Signal sig, int num);
 extern void jtag_Set(jtag_Signal sig, bool val);
 extern bool jtag_Get(jtag_Signal sig);
 extern void jtag_Clock();
