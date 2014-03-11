@@ -41,11 +41,11 @@ extern void cmd_Debug(int Level);
 extern void cmd_Tap(jtagTAP_TAPState State);
 extern void cmd_Clock(int Counts);
 extern void cmd_Config(); 
-extern void cmd_SignalConfig(jtag_Pin Signal, int Pin);
+extern void cmd_SignalConfig(jtag_Signal Signal, int Pin);
 extern void cmd_ConfigClock(int Rate);
 extern void cmd_IREnum(int Device);
 extern void cmd_Chain();
 extern void cmd_Scan(int Pins, int Mode);
-extern void cmd_Signal(jtag_Pin Signal, int State);
+extern void cmd_Signal(jtag_Signal Signal, int State);
 
 #endif

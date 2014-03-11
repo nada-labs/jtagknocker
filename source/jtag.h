@@ -19,25 +19,25 @@
 #define _JTAG_H_
 
 #include <stdbool.h>
-#define JTAG_PIN_NOT_ALLOCATED (16U)
+#define JTAG_SIGNAL_NOT_ALLOCATED (16U)
 
-typedef enum jtag_ePin
+typedef enum jtag_eSignal
 {
-	JTAG_PIN_TCK = 0,
-	JTAG_PIN_TMS,
-	JTAG_PIN_TDI,
-	JTAG_PIN_TDO,
-	JTAG_PIN_TRST,
-	JTAG_PIN_SRST,
-	JTAG_PIN_RTCK,
-	JTAG_PIN_MAX
-} jtag_Pin;
+	JTAG_SIGNAL_TCK = 0,
+	JTAG_SIGNAL_TMS,
+	JTAG_SIGNAL_TDI,
+	JTAG_SIGNAL_TDO,
+	JTAG_SIGNAL_TRST,
+	JTAG_SIGNAL_SRST,
+	JTAG_SIGNAL_RTCK,
+	JTAG_SIGNAL_MAX
+} jtag_Signal;
 
 extern void jtag_Init();
 
-extern void jtag_Cfg(jtag_Pin pin, unsigned int num);
-extern void jtag_Set(jtag_Pin pin, bool val);
-extern bool jtag_Get(jtag_Pin pin);
+extern void jtag_Cfg(jtag_Signal sig, unsigned int num);
+extern void jtag_Set(jtag_Signal sig, bool val);
+extern bool jtag_Get(jtag_Signal sig);
 extern void jtag_Clock();
 
 #endif

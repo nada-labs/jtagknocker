@@ -65,7 +65,7 @@ void jtagTAP_SetState(jtagTAP_TAPState target)
 			{
 				//Handle the unknown case by performing a reset
 				case JTAGTAP_STATE_UNKNOWN:
-					jtag_Set(JTAG_PIN_TMS, true);
+					jtag_Set(JTAG_SIGNAL_TMS, true);
 					jtag_Clock();
 					jtag_Clock();
 					jtag_Clock();
@@ -75,13 +75,13 @@ void jtagTAP_SetState(jtagTAP_TAPState target)
 					break;
 
 				case JTAGTAP_STATE_RESET:
-					jtag_Set(JTAG_PIN_TMS, false);
+					jtag_Set(JTAG_SIGNAL_TMS, false);
 					jtag_Clock();
 					TAPState = JTAGTAP_STATE_IDLE;
 					break;
 
 				case JTAGTAP_STATE_IDLE:
-					jtag_Set(JTAG_PIN_TMS, true);
+					jtag_Set(JTAG_SIGNAL_TMS, true);
 					jtag_Clock();
 					TAPState = JTAGTAP_STATE_DR_SCAN;
 					break;
@@ -89,12 +89,12 @@ void jtagTAP_SetState(jtagTAP_TAPState target)
 				case JTAGTAP_STATE_DR_SCAN:
 					if((target >= JTAGTAP_STATE_DR_CAPTURE) && (target <= JTAGTAP_STATE_DR_UPDATE))
 					{
-						jtag_Set(JTAG_PIN_TMS, false);
+						jtag_Set(JTAG_SIGNAL_TMS, false);
 						TAPState = JTAGTAP_STATE_DR_CAPTURE;
 					}
 					else
 					{
-						jtag_Set(JTAG_PIN_TMS, true);
+						jtag_Set(JTAG_SIGNAL_TMS, true);
 						TAPState = JTAGTAP_STATE_IR_SCAN;
 					}
 					jtag_Clock();
@@ -103,19 +103,19 @@ void jtagTAP_SetState(jtagTAP_TAPState target)
 				case JTAGTAP_STATE_DR_CAPTURE:
 					if(target == JTAGTAP_STATE_DR_SHIFT)
 					{
-						jtag_Set(JTAG_PIN_TMS, false);
+						jtag_Set(JTAG_SIGNAL_TMS, false);
 						TAPState = JTAGTAP_STATE_DR_SHIFT;
 					}
 					else
 					{
-						jtag_Set(JTAG_PIN_TMS, true);
+						jtag_Set(JTAG_SIGNAL_TMS, true);
 						TAPState = JTAGTAP_STATE_DR_EXIT1;
 					}
 					jtag_Clock();
 					break;
 
 				case JTAGTAP_STATE_DR_SHIFT:
-					jtag_Set(JTAG_PIN_TMS, true);
+					jtag_Set(JTAG_SIGNAL_TMS, true);
 					jtag_Clock();
 					TAPState = JTAGTAP_STATE_DR_EXIT1;
 					break;
@@ -123,19 +123,19 @@ void jtagTAP_SetState(jtagTAP_TAPState target)
 				case JTAGTAP_STATE_DR_EXIT1:
 					if((target == JTAGTAP_STATE_DR_PAUSE) || (target == JTAGTAP_STATE_DR_EXIT2) || (target == JTAGTAP_STATE_DR_SHIFT))
 					{
-						jtag_Set(JTAG_PIN_TMS, false);
+						jtag_Set(JTAG_SIGNAL_TMS, false);
 						TAPState = JTAGTAP_STATE_DR_PAUSE;
 					}
 					else
 					{
-						jtag_Set(JTAG_PIN_TMS, true);
+						jtag_Set(JTAG_SIGNAL_TMS, true);
 						TAPState = JTAGTAP_STATE_DR_UPDATE;
 					}
 					jtag_Clock();
 					break;
 
 				case JTAGTAP_STATE_DR_PAUSE:
-					jtag_Set(JTAG_PIN_TMS, true);
+					jtag_Set(JTAG_SIGNAL_TMS, true);
 					jtag_Clock();
 					TAPState = JTAGTAP_STATE_DR_EXIT2;
 					break;
@@ -143,12 +143,12 @@ void jtagTAP_SetState(jtagTAP_TAPState target)
 				case JTAGTAP_STATE_DR_EXIT2:
 					if((target == JTAGTAP_STATE_DR_PAUSE) || (target == JTAGTAP_STATE_DR_EXIT1) || (target == JTAGTAP_STATE_DR_SHIFT))
 					{
-						jtag_Set(JTAG_PIN_TMS, false);
+						jtag_Set(JTAG_SIGNAL_TMS, false);
 						TAPState = JTAGTAP_STATE_DR_SHIFT;
 					}
 					else
 					{
-						jtag_Set(JTAG_PIN_TMS, true);
+						jtag_Set(JTAG_SIGNAL_TMS, true);
 						TAPState = JTAGTAP_STATE_DR_UPDATE;
 					}
 					jtag_Clock();
@@ -157,12 +157,12 @@ void jtagTAP_SetState(jtagTAP_TAPState target)
 				case JTAGTAP_STATE_DR_UPDATE:
 					if(target == JTAGTAP_STATE_IDLE)
 					{
-						jtag_Set(JTAG_PIN_TMS, false);
+						jtag_Set(JTAG_SIGNAL_TMS, false);
 						TAPState = JTAGTAP_STATE_IDLE;
 					}
 					else
 					{
-						jtag_Set(JTAG_PIN_TMS, true);
+						jtag_Set(JTAG_SIGNAL_TMS, true);
 						TAPState = JTAGTAP_STATE_DR_SCAN;
 					}
 					jtag_Clock();
@@ -171,12 +171,12 @@ void jtagTAP_SetState(jtagTAP_TAPState target)
 				case JTAGTAP_STATE_IR_SCAN:
 					if((target >= JTAGTAP_STATE_IR_CAPTURE) && (target <= JTAGTAP_STATE_IR_UPDATE))
 					{
-						jtag_Set(JTAG_PIN_TMS, false);
+						jtag_Set(JTAG_SIGNAL_TMS, false);
 						TAPState = JTAGTAP_STATE_IR_CAPTURE;
 					}
 					else
 					{
-						jtag_Set(JTAG_PIN_TMS, true);
+						jtag_Set(JTAG_SIGNAL_TMS, true);
 						TAPState = JTAGTAP_STATE_RESET;
 					}
 					jtag_Clock();
@@ -185,19 +185,19 @@ void jtagTAP_SetState(jtagTAP_TAPState target)
 				case JTAGTAP_STATE_IR_CAPTURE:
 					if(target == JTAGTAP_STATE_IR_SHIFT)
 					{
-						jtag_Set(JTAG_PIN_TMS, false);
+						jtag_Set(JTAG_SIGNAL_TMS, false);
 						TAPState = JTAGTAP_STATE_IR_SHIFT;
 					}
 					else
 					{
-						jtag_Set(JTAG_PIN_TMS, true);
+						jtag_Set(JTAG_SIGNAL_TMS, true);
 						TAPState = JTAGTAP_STATE_IR_EXIT1;
 					}
 					jtag_Clock();
 					break;
 
 				case JTAGTAP_STATE_IR_SHIFT:
-					jtag_Set(JTAG_PIN_TMS, true);
+					jtag_Set(JTAG_SIGNAL_TMS, true);
 					jtag_Clock();
 					TAPState = JTAGTAP_STATE_IR_EXIT1;
 					break;
@@ -205,19 +205,19 @@ void jtagTAP_SetState(jtagTAP_TAPState target)
 				case JTAGTAP_STATE_IR_EXIT1:
 					if((target == JTAGTAP_STATE_IR_PAUSE) || (target == JTAGTAP_STATE_IR_EXIT2) || (target == JTAGTAP_STATE_IR_SHIFT))
 					{
-						jtag_Set(JTAG_PIN_TMS, false);
+						jtag_Set(JTAG_SIGNAL_TMS, false);
 						TAPState = JTAGTAP_STATE_IR_PAUSE;
 					}
 					else
 					{
-						jtag_Set(JTAG_PIN_TMS, true);
+						jtag_Set(JTAG_SIGNAL_TMS, true);
 						TAPState = JTAGTAP_STATE_IR_UPDATE;
 					}
 					jtag_Clock();
 					break;
 
 				case JTAGTAP_STATE_IR_PAUSE:
-					jtag_Set(JTAG_PIN_TMS, true);
+					jtag_Set(JTAG_SIGNAL_TMS, true);
 					jtag_Clock();
 					TAPState = JTAGTAP_STATE_IR_EXIT2;
 					break;
@@ -225,12 +225,12 @@ void jtagTAP_SetState(jtagTAP_TAPState target)
 				case JTAGTAP_STATE_IR_EXIT2:
 					if((target == JTAGTAP_STATE_IR_PAUSE) || (target == JTAGTAP_STATE_IR_EXIT1) || (target == JTAGTAP_STATE_IR_SHIFT))
 					{
-						jtag_Set(JTAG_PIN_TMS, false);
+						jtag_Set(JTAG_SIGNAL_TMS, false);
 						TAPState = JTAGTAP_STATE_IR_SHIFT;
 					}
 					else
 					{
-						jtag_Set(JTAG_PIN_TMS, true);
+						jtag_Set(JTAG_SIGNAL_TMS, true);
 						TAPState = JTAGTAP_STATE_IR_UPDATE;
 					}
 					jtag_Clock();
@@ -239,12 +239,12 @@ void jtagTAP_SetState(jtagTAP_TAPState target)
 				case JTAGTAP_STATE_IR_UPDATE:
 					if(target == JTAGTAP_STATE_IDLE)
 					{
-						jtag_Set(JTAG_PIN_TMS, false);
+						jtag_Set(JTAG_SIGNAL_TMS, false);
 						TAPState = JTAGTAP_STATE_IDLE;
 					}
 					else
 					{
-						jtag_Set(JTAG_PIN_TMS, true);
+						jtag_Set(JTAG_SIGNAL_TMS, true);
 						TAPState = JTAGTAP_STATE_DR_SCAN;
 					}
 					jtag_Clock();

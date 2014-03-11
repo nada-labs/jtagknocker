@@ -52,7 +52,7 @@ static bool chain_findIRLength()
 	unsigned int count;
 
 	//set TDI high and clock it through the chain in IR_SHIFT
-	jtag_Set(JTAG_PIN_TDI, true);
+	jtag_Set(JTAG_SIGNAL_TDI, true);
 	jtagTAP_SetState(JTAGTAP_STATE_IR_SHIFT);
 	
 	for(count = 0; count < CHAIN_MAX_IRLEN; ++count)
@@ -61,13 +61,13 @@ static bool chain_findIRLength()
 	}
 
 	//now set TDI low and count the number of clocks until TDO goes low
-	jtag_Set(JTAG_PIN_TDI, false);
+	jtag_Set(JTAG_SIGNAL_TDI, false);
 
 	for(count = 1; count < CHAIN_MAX_IRLEN; ++count)
 	{
 		jtag_Clock();
 
-		if(!jtag_Get(JTAG_PIN_TDO))
+		if(!jtag_Get(JTAG_SIGNAL_TDO))
 		{
 			//went to 0
 			chain_IRLength = count;
@@ -90,7 +90,7 @@ static bool chain_findDevices()
 
 	//get the TAP into the right state and set TDI high
 	jtagTAP_SetState(JTAGTAP_STATE_IR_SHIFT);
-	jtag_Set(JTAG_PIN_TDI, true);
+	jtag_Set(JTAG_SIGNAL_TDI, true);
  
 	//load BYPASS into every device in the chain (TDI = all ones)
 	for(count = 0; count < chain_IRLength; ++count)
@@ -102,7 +102,7 @@ static bool chain_findDevices()
 
 	for(count = 0; count < CHAIN_MAX_DEVICES; ++count)
 	{
-		if(jtag_Get(JTAG_PIN_TDO))
+		if(jtag_Get(JTAG_SIGNAL_TDO))
 		{
 			//went to 1, all bypass registers have been emptied
 			chain_Devices = count;
@@ -131,7 +131,7 @@ bool chain_Detect()
 		//reset the TAP and hope the devices support ID Code
 		jtagTAP_SetState(JTAGTAP_STATE_RESET);
 		jtagTAP_SetState(JTAGTAP_STATE_DR_SHIFT);
-		jtag_Set(JTAG_PIN_TDI, true);
+		jtag_Set(JTAG_SIGNAL_TDI, true);
 
 		serial_Write("[+] %i Device(s) found, with total IR Length of %i\r\n", chain_Devices, chain_IRLength);
 
@@ -139,14 +139,14 @@ bool chain_Detect()
 		{
 			jtag_Clock();
 
-			if(jtag_Get(JTAG_PIN_TDO))
+			if(jtag_Get(JTAG_SIGNAL_TDO))
 			{
 				//start of an ID Code
 				uint32_t idcode = 0x80000000;
 				for(count = 0; count < 31; ++count)
 				{	
 					idcode >>= 1;
-					idcode |= (jtag_Get(JTAG_PIN_TDO) ? 0x80000000 : 0);
+					idcode |= (jtag_Get(JTAG_SIGNAL_TDO) ? 0x80000000 : 0);
 					jtag_Clock();
 				}
 				if(idcode == 0xFFFFFFFF)

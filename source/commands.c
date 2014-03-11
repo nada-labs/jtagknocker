@@ -143,7 +143,7 @@ void cmd_Config()
  * @param[in] The pin to assign the signal to, or CMD_ARG_NONE to display the
  * current assigned pin.
  */
-void cmd_SignalConfig(jtag_Pin Signal, int Pin)
+void cmd_SignalConfig(jtag_Signal Signal, int Pin)
 {
 	serial_Write("cmd_SignalConfig(%i, %i);\n", Signal, Pin);
 }
@@ -205,7 +205,7 @@ void cmd_Scan(int Pins, int Mode)
  * @param[in] Signal The signal to display.
  * @param[in] State The state to set the provided signal to.
  */
-void cmd_Signal(jtag_Pin Signal, int State)
+void cmd_Signal(jtag_Signal Signal, int State)
 {
 	serial_Write("cmd_Signal(%i, %i);\n", Signal, State);
 }

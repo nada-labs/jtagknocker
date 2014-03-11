@@ -55,8 +55,8 @@ static void knock_ScanReset(unsigned int tck, unsigned int tms)
 	uint16_t scan_results[KNOCK_RESULTS];
 
 	jtag_Init();
-	jtag_Cfg(JTAG_PIN_TCK, tck);
-	jtag_Cfg(JTAG_PIN_TMS, tms);
+	jtag_Cfg(JTAG_SIGNAL_TCK, tck);
+	jtag_Cfg(JTAG_SIGNAL_TMS, tms);
 
 	jtagTAP_SetState(JTAGTAP_STATE_UNKNOWN);
 	jtagTAP_SetState(JTAGTAP_STATE_DR_SHIFT);
@@ -160,8 +160,8 @@ static void knock_ScanResetFindTDI(unsigned int tck, unsigned int tms, uint16_t 
 					unsigned int clocks, changes = 0;
 					unsigned int prev_tdo_val = (GPIOD_IDR & (1 << tdo));
 
-					jtag_Cfg(JTAG_PIN_TDI, tdi);
-					jtag_Set(JTAG_PIN_TDI, ((tdi_state >> tdi) & 1) == 0);	//toggle the TDI pin
+					jtag_Cfg(JTAG_SIGNAL_TDI, tdi);
+					jtag_Set(JTAG_SIGNAL_TDI, ((tdi_state >> tdi) & 1) == 0);	//toggle the TDI pin
 					
 					for(clocks = 0; clocks < nresuts; ++clocks)
 					{
@@ -176,7 +176,7 @@ static void knock_ScanResetFindTDI(unsigned int tck, unsigned int tms, uint16_t 
 					}
 
 					//reset the pin state and clock again, undoing what we just did
-					jtag_Set(JTAG_PIN_TDI, ((tdi_state >> tdi) & 1) == 1);	//toggle the TDI pin
+					jtag_Set(JTAG_SIGNAL_TDI, ((tdi_state >> tdi) & 1) == 1);	//toggle the TDI pin
 					for(clocks = 0; clocks < nresuts; ++clocks)
 					{
 						jtag_Clock();	
@@ -185,12 +185,12 @@ static void knock_ScanResetFindTDI(unsigned int tck, unsigned int tms, uint16_t 
 					if(changes == 1)
 					{
 						serial_Write("[!] Potential Chain: TCK: %i TMS: %i TDO: %i TDI: %i\r\n", tck, tms, tdo, tdi);
-						jtag_Cfg(JTAG_PIN_TDO, tdo);
+						jtag_Cfg(JTAG_SIGNAL_TDO, tdo);
 						chain_Detect();
 					}
 
-					jtag_Cfg(JTAG_PIN_TDI, JTAG_PIN_NOT_ALLOCATED);
-					jtag_Cfg(JTAG_PIN_TDO, JTAG_PIN_NOT_ALLOCATED);
+					jtag_Cfg(JTAG_SIGNAL_TDI, JTAG_SIGNAL_NOT_ALLOCATED);
+					jtag_Cfg(JTAG_SIGNAL_TDO, JTAG_SIGNAL_NOT_ALLOCATED);
 				}
 			}
 		}
@@ -219,12 +219,12 @@ static void knock_ScanBypass(unsigned int tck, unsigned int tms)
 			int tdo_change_clocks[16];
 			jtag_Init();
 
-			jtag_Cfg(JTAG_PIN_TCK, tck);
-			jtag_Cfg(JTAG_PIN_TMS, tms);
+			jtag_Cfg(JTAG_SIGNAL_TCK, tck);
+			jtag_Cfg(JTAG_SIGNAL_TMS, tms);
 
 			//we can use this pin
-			jtag_Cfg(JTAG_PIN_TDI, tdi);
-			jtag_Set(JTAG_PIN_TDI, true);	//set the pin to a known state
+			jtag_Cfg(JTAG_SIGNAL_TDI, tdi);
+			jtag_Set(JTAG_SIGNAL_TDI, true);	//set the pin to a known state
 
 			//put the JTAG TAP into a known state
 			jtagTAP_SetState(JTAGTAP_STATE_UNKNOWN);
@@ -237,7 +237,7 @@ static void knock_ScanBypass(unsigned int tck, unsigned int tms)
 			tdo_candidates = GPIOD_IDR;	//any pin which is set here and changes to 
 							//0 once and stays there is probably TDO
 	
-			jtag_Set(JTAG_PIN_TDI, false);
+			jtag_Set(JTAG_SIGNAL_TDI, false);
 			for(count = 0; count < 16; ++count)
 			{
 				tdo_change_clocks[count] = 0;
@@ -277,15 +277,15 @@ static void knock_ScanBypass(unsigned int tck, unsigned int tms)
 				if(tdo_change_clocks[tdo] >= 2)
 				{
 					serial_Write("[!] Potential Chain: TCK: %i TMS: %i TDO: %i TDI: %i\r\n", tck, tms, tdo, tdi);
-					jtag_Cfg(JTAG_PIN_TDO, tdo);
+					jtag_Cfg(JTAG_SIGNAL_TDO, tdo);
 					chain_Detect();
-					jtag_Cfg(JTAG_PIN_TDO, JTAG_PIN_NOT_ALLOCATED);
+					jtag_Cfg(JTAG_SIGNAL_TDO, JTAG_SIGNAL_NOT_ALLOCATED);
 				}
 			}
 
 			//we may have found a chain, put it back into bypass
 			//LX4F120HQ5R locks up with an IR full of 0
-			jtag_Set(JTAG_PIN_TDI, true);	//set the pin to a known state
+			jtag_Set(JTAG_SIGNAL_TDI, true);	//set the pin to a known state
 			for(count = 0; count < knock_IRShiftCount; ++count)
 			{
 				jtag_Clock();

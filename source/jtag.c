@@ -21,7 +21,7 @@
 #include <libopencm3/stm32/rcc.h>
 #include "jtag.h"
 
-static unsigned int jtag_Pins[JTAG_PIN_MAX];
+static unsigned int jtag_Signals[JTAG_SIGNAL_MAX];
 
 /**
  * @brief Initialises the JTAG local variables.
@@ -30,9 +30,9 @@ void jtag_Init()
 {
 	unsigned int i;
 
-	for(i = 0; i < JTAG_PIN_MAX; ++i)
+	for(i = 0; i < JTAG_SIGNAL_MAX; ++i)
 	{
-		jtag_Pins[i] = JTAG_PIN_NOT_ALLOCATED;
+		jtag_Signals[i] = JTAG_SIGNAL_NOT_ALLOCATED;
 	}
 
 	//set up the io ports to be all inputs, push-pull, no pullups and slow when set as outputs.
@@ -54,45 +54,45 @@ void jtag_Init()
  *
  * @param[in] pin The JTAG signal to configure.
  * @param[in] num The pin number the signal is connected to, or
- * JTAG_PIN_NOT_ALLOCATED to de-configure the pin.
+ * JTAG_SIGNAL_NOT_ALLOCATED to de-configure the pin.
  */
-void jtag_Cfg(jtag_Pin pin, unsigned int num)
+void jtag_Cfg(jtag_Signal sig, unsigned int num)
 {
-	if((pin >= JTAG_PIN_TCK) && (pin < JTAG_PIN_MAX))
+	if((sig >= JTAG_SIGNAL_TCK) && (sig < JTAG_SIGNAL_MAX))
 	{
 		unsigned int mask_and, mask_or;
-		if(num > JTAG_PIN_NOT_ALLOCATED)
+		if(num > JTAG_SIGNAL_NOT_ALLOCATED)
 		{
-			num = JTAG_PIN_NOT_ALLOCATED;
+			num = JTAG_SIGNAL_NOT_ALLOCATED;
 		}
 
-		if(num != JTAG_PIN_NOT_ALLOCATED)
+		if(num != JTAG_SIGNAL_NOT_ALLOCATED)
 		{
 			//Deconfigure the old pin if allocated
-			if(jtag_Pins[pin] != JTAG_PIN_NOT_ALLOCATED)
+			if(jtag_Signals[sig] != JTAG_SIGNAL_NOT_ALLOCATED)
 			{
-				mask_and = 3 << (jtag_Pins[pin] * 2);
+				mask_and = 3 << (jtag_Signals[sig] * 2);
 				GPIOD_MODER = (GPIOD_MODER & ~mask_and);
 			}
 
 			//Configure the IO port mode
 			mask_and = 3 << (num * 2);
-			mask_or = ((pin == JTAG_PIN_TDO) || (pin == JTAG_PIN_RTCK)) ? 0 : 1;	//Input or output?
+			mask_or = ((sig == JTAG_SIGNAL_TDO) || (sig == JTAG_SIGNAL_RTCK)) ? 0 : 1;	//Input or output?
 			mask_or = mask_or << (num * 2);
 			GPIOD_MODER = (GPIOD_MODER & ~mask_and) | mask_or;
 		}
 		else
 		{
 			//Configure the pin as an input
-			unsigned int old_pin = jtag_Pins[pin];
-			if(old_pin != JTAG_PIN_NOT_ALLOCATED)
+			unsigned int old_sig = jtag_Signals[sig];
+			if(old_sig != JTAG_SIGNAL_NOT_ALLOCATED)
 			{
-				mask_and = 3 << (old_pin * 2);
+				mask_and = 3 << (old_sig * 2);
 				GPIOD_MODER = (GPIOD_MODER & ~mask_and);
 			}
 
 		}
-		jtag_Pins[pin] = num;	//set the allocation
+		jtag_Signals[sig] = num;	//set the allocation
 	}
 }
 
@@ -102,15 +102,15 @@ void jtag_Cfg(jtag_Pin pin, unsigned int num)
  * @param[in] pin The pin to set
  * @param[in] val, true for High, false for Low.
  */
-void jtag_Set(jtag_Pin pin, bool val)
+void jtag_Set(jtag_Signal sig, bool val)
 {
 	unsigned int pinNum;
 
-	if((pin >= JTAG_PIN_TCK) && (pin < JTAG_PIN_MAX) && !((pin == JTAG_PIN_TDO) || (pin == JTAG_PIN_RTCK)))
+	if((sig >= JTAG_SIGNAL_TCK) && (sig < JTAG_SIGNAL_MAX) && !((sig == JTAG_SIGNAL_TDO) || (sig == JTAG_SIGNAL_RTCK)))
 	{
-		pinNum = jtag_Pins[pin];
+		pinNum = jtag_Signals[sig];
 
-		if(pinNum != JTAG_PIN_NOT_ALLOCATED)
+		if(pinNum != JTAG_SIGNAL_NOT_ALLOCATED)
 		{
 			//set/reset the appropriate pin
 			pinNum = 1 << pinNum;
@@ -130,12 +130,12 @@ void jtag_Set(jtag_Pin pin, bool val)
  *@retval true pin is high
  *@retval false pin is low
  */
-bool jtag_Get(jtag_Pin pin)
+bool jtag_Get(jtag_Signal sig)
 {
-	unsigned int pinNum = jtag_Pins[pin];
+	unsigned int pinNum = jtag_Signals[sig];
 	bool pinState = false;
 
-	if(pinNum != JTAG_PIN_NOT_ALLOCATED)
+	if(pinNum != JTAG_SIGNAL_NOT_ALLOCATED)
 	{
 		//read the pin state from the input register
 		pinState = ((GPIOD_IDR & (1 << pinNum)) != 0);
@@ -151,14 +151,14 @@ bool jtag_Get(jtag_Pin pin)
 void jtag_Clock()
 {
 	unsigned int cnt;
-	jtag_Set(JTAG_PIN_TCK, true);
+	jtag_Set(JTAG_SIGNAL_TCK, true);
 	
 	for(cnt = 8000; cnt > 0; --cnt)
 	{
 		__asm("nop");
 	}
 
-	jtag_Set(JTAG_PIN_TCK, false);
+	jtag_Set(JTAG_SIGNAL_TCK, false);
 
 	for(cnt = 8000; cnt > 0; --cnt)
 	{
