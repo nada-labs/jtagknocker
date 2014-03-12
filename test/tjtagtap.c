@@ -21,9 +21,9 @@
 
 //rename the functions that we want to mock
 //jtag.h (included by jtagtap.c) will prototype the functions for us.
-#define jtag_Set	jtagTAP_Mock_jtag_Set
-#define jtag_Clock	jtagTAP_Mock_jtag_Clock
-#define jtag_IsAssigned	jtagTAP_Mock_jtag_IsAssigned
+#define jtag_Set		jtagTAP_Mock_jtag_Set
+#define jtag_Clock		jtagTAP_Mock_jtag_Clock
+#define jtag_IsAllocated	jtagTAP_Mock_jtag_IsAllocated
 
 //include the file *source*
 #include "../source/jtagtap.c"
@@ -126,8 +126,6 @@ bool jtagTAP_TestReset()
 	HasTRST = true;
 	TMSStateTx = 0x0FFFFFF0;
 	TRSTChanged = 0;
-
-	jtagTAP_Init();
 	
 	//Test
 	TAPState = JTAGTAP_STATE_DR_SHIFT;

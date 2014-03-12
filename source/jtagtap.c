@@ -40,6 +40,8 @@ const char * const jtagTAP_StateNames[JTAGTAP_STATE_MAX] = {
 	[JTAGTAP_STATE_IR_UPDATE] = "Update IR"
 };
 
+const unsigned int delay_count = 20000;
+
 /**
  * @brief Initalize the TAP module
  *
@@ -58,6 +60,23 @@ void jtagTAP_SetState(jtagTAP_TAPState target)
 {
 	if(target != JTAGTAP_STATE_UNKNOWN)
 	{
+		if((target == JTAGTAP_STATE_RESET) && (jtag_IsAllocated(JTAG_SIGNAL_TRST)))
+		{
+			unsigned int count = 0;
+
+			//take the easy way to reset
+			jtag_Set(JTAG_SIGNAL_TMS, true);
+			jtag_Set(JTAG_SIGNAL_TRST, false);	//Assumes an active low signal
+
+			//delay a bit
+			while(++count < delay_count)
+			{
+				__asm("nop");
+			}
+			jtag_Set(JTAG_SIGNAL_TRST, true);	//Assumes an active low signal
+			TAPState = JTAGTAP_STATE_RESET;
+		}
+
 		while(TAPState != target)
 		{
 			//only process if there is a state change requested.
@@ -65,12 +84,30 @@ void jtagTAP_SetState(jtagTAP_TAPState target)
 			{
 				//Handle the unknown case by performing a reset
 				case JTAGTAP_STATE_UNKNOWN:
-					jtag_Set(JTAG_SIGNAL_TMS, true);
-					jtag_Clock();
-					jtag_Clock();
-					jtag_Clock();
-					jtag_Clock();
-					jtag_Clock();
+					if(jtag_IsAllocated(JTAG_SIGNAL_TRST))
+					{
+						unsigned int count = 0;
+
+						//take the easy way to reset
+						jtag_Set(JTAG_SIGNAL_TMS, true);
+						jtag_Set(JTAG_SIGNAL_TRST, false);	//Assumes an active low signal
+
+						//delay a bit
+						while(++count < delay_count)
+						{
+							__asm("nop");
+						}
+						jtag_Set(JTAG_SIGNAL_TRST, true);	//Assumes an active low signal	
+					}
+					else
+					{
+						jtag_Set(JTAG_SIGNAL_TMS, true);
+						jtag_Clock();
+						jtag_Clock();
+						jtag_Clock();
+						jtag_Clock();
+						jtag_Clock();
+					}
 					TAPState = JTAGTAP_STATE_RESET;
 					break;
 
