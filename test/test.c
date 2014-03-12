@@ -24,6 +24,7 @@
 
 //add test include files here
 #include "tjtag.h"
+#include "tjtagtap.h"
 
 //Function prototypes for testing tests...
 bool test_AssertPass();
@@ -52,6 +53,11 @@ static const test_tFunc test_Functions[] =
 	jtag_TestGet,
 	jtag_TestGetUnallocated,
 	jtag_TestIsAllocated,
+
+	//JTAG TAP tests
+	jtagTAP_TestInitilization,
+	jtagTAP_TestTxFromUnknown,
+	jtagTAP_TestReset,
 };
 
 #define TESTS (sizeof(test_Functions)/sizeof(test_tFunc))	///< Number of functions in the test
