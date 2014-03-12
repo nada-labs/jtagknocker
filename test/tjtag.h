@@ -35,4 +35,6 @@ extern bool jtag_TestSetUnallocatedSignal();
 extern bool jtag_TestSetInput();
 extern bool jtag_TestGet();
 extern bool jtag_TestGetUnallocated();
+extern bool jtag_TestIsAllocated();
+
 #endif

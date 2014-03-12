@@ -174,3 +174,21 @@ void jtag_Clock()
 		__asm("nop");
 	}
 }
+
+/**
+ * @brief Get the allocated state of a signal
+ *
+ * @retval true Signal allocated to a pin
+ * @retval false Signal no allocated to a pin
+ */
+bool jtag_IsAllocated(jtag_Signal sig)
+{
+	bool retval = false;
+
+	if((sig >= JTAG_SIGNAL_TCK) && (sig < JTAG_SIGNAL_MAX))
+	{
+		retval = (jtag_Signals[sig] != JTAG_SIGNAL_NOT_ALLOCATED);
+	}
+	return retval;	
+}
+

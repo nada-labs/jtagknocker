@@ -51,7 +51,7 @@ static const test_tFunc test_Functions[] =
 	jtag_TestSetInput,
 	jtag_TestGet,
 	jtag_TestGetUnallocated,
-
+	jtag_TestIsAllocated,
 };
 
 #define TESTS (sizeof(test_Functions)/sizeof(test_tFunc))	///< Number of functions in the test

@@ -459,4 +459,23 @@ bool jtag_TestGetUnallocated()
 	
 	return true;
 }
- 
+
+/**
+ * @brief Test jtag_IsAllocated()
+ *
+ * The function should return true if the provided signal is allocated and false otherwise
+ */
+bool jtag_TestIsAllocated()
+{
+	bool val;
+	jtag_Init();
+	
+	val = jtag_IsAllocated(JTAG_SIGNAL_TDI);
+	ASSERT(!val, "Signal apparaently allocated");
+	
+	jtag_Cfg(JTAG_SIGNAL_TDI, 4);
+	val = jtag_IsAllocated(JTAG_SIGNAL_TDI);
+	ASSERT(val, "Signal apparaently not allocated");
+
+	return true;
+}  
