@@ -328,3 +328,135 @@ bool jtag_TestSignalConfigAlreadySetSig()
 
 	return true;
 }
+
+/**
+ * @brief Test setting and clearing an output
+ *
+ * The set function should use the BSR register to modify the signal
+ * as required.
+ */
+bool jtag_TestSetAndClear()
+{
+	const unsigned int pin_num = 3;
+
+	//setup
+	jtag_Init();
+	jtag_Cfg(JTAG_SIGNAL_TRST, pin_num);
+
+	GPIOD_BSRR = 0;	// clear the register (should be zero from jtag_Init anyway)
+	
+	jtag_Set(JTAG_SIGNAL_TRST, true);
+	
+	//bit 3 in BSSR should be set, to set the pin output high.
+	//all other bits should be 0 as other pins shouldn't be modified.
+	ASSERT((GPIOD_BSRR == (1<<pin_num)), "Pin wasn't set correctly. BSRR: %08X should be %08x", GPIOD_BSRR, 1<<pin_num);
+
+	jtag_Set(JTAG_SIGNAL_TRST, false);
+	//bit 19 (3 + 16) in BSSR should be set, to set the pin output low.
+	//all other bits should be 0 as other pins shouldn't be modified.
+	ASSERT((GPIOD_BSRR == (1<<(pin_num+16))), "Pin wasn't set correctly. BSRR: %08X should be %08x", GPIOD_BSRR, 1<<(pin_num+16));
+	
+	return true;
+}
+
+/**
+ * @brief Test setting and clearing an unallocated signal
+ *
+ * Nothing should be modified if an unallocated signal is set
+ */
+bool jtag_TestSetUnallocatedSignal()
+{
+	//setup
+	jtag_Init();
+	GPIOD_BSRR = 0;	// clear the register (should be zero from jtag_Init anyway)
+	
+	jtag_Set(JTAG_SIGNAL_TRST, true);
+	//no bits in BSRR shoul be set.
+	ASSERT((GPIOD_BSRR == 0), "BSRR modified: %08X should be %08x", GPIOD_BSRR, 0);
+
+	jtag_Set(JTAG_SIGNAL_TRST, false);
+	//no bits in BSRR shoul be set.
+	ASSERT((GPIOD_BSRR == 0), "BSRR modified: %08X should be %08x", GPIOD_BSRR, 0);
+	
+	return true;
+}
+
+/**
+ * @brief Test setting and clearing an input signal
+ *
+ * Nothing should be modified if an input signal is set
+ */
+bool jtag_TestSetInput()
+{
+	//setup
+	jtag_Init();
+	jtag_Cfg(JTAG_SIGNAL_TDO, 3);
+
+	GPIOD_BSRR = 0;	// clear the register (should be zero from jtag_Init anyway)
+	
+	jtag_Set(JTAG_SIGNAL_TDO, true);
+	//no bits in BSRR shoul be set.
+	ASSERT((GPIOD_BSRR == 0), "BSRR modified: %08X should be %08x", GPIOD_BSRR, 0);
+
+	jtag_Set(JTAG_SIGNAL_TDO, false);
+	//no bits in BSRR shoul be set.
+	ASSERT((GPIOD_BSRR == 0), "BSRR modified: %08X should be %08x", GPIOD_BSRR, 0);
+	
+	return true;
+}
+
+/**
+ * @brief Test getting an input and output signal
+ *
+ * Information is pulled from the IDR.
+ */
+bool jtag_TestGet()
+{
+	bool val;
+	jtag_Init();
+	jtag_Cfg(JTAG_SIGNAL_TDO, 3);
+	jtag_Cfg(JTAG_SIGNAL_TMS, 8);
+
+	GPIOD_IDR = (1<<3) | (1<<8);
+
+	val = jtag_Get(JTAG_SIGNAL_TDO);
+	ASSERT(val, "Signal not active.");
+	val = jtag_Get(JTAG_SIGNAL_TMS);
+	ASSERT(val, "Signal not active.");
+
+	GPIOD_IDR = (1<<8);
+	
+	val = jtag_Get(JTAG_SIGNAL_TDO);
+	ASSERT(!val, "Signal active.");
+	val = jtag_Get(JTAG_SIGNAL_TMS);
+	ASSERT(val, "Signal not active.");
+
+	GPIOD_IDR = 0;
+	
+	val = jtag_Get(JTAG_SIGNAL_TDO);
+	ASSERT(!val, "Signal active.");
+	val = jtag_Get(JTAG_SIGNAL_TMS);
+	ASSERT(!val, "Signal active.");
+
+	return true;
+}
+
+/**
+ * @brief Test getting an unallocated signal
+ *
+ * jtag_Get() should return false for an unallocated signal
+ */
+bool jtag_TestGetUnallocated()
+{
+	bool val;
+	jtag_Init();
+	
+	GPIOD_IDR = 0xFFFFFFFF;
+
+	val = jtag_Get(JTAG_SIGNAL_TDO);
+	//no bits in BSRR shoul be set.
+	ASSERT(!val, "Unallocated signal active.");
+	
+	return true;
+}
+ 

@@ -30,4 +30,9 @@ extern bool jtag_TestSignalConfigUnSet();
 extern bool jtag_TestSignalConfigAlreadySetPin();
 extern bool jtag_TestSignalConfigAlreadySetSig();
 
+extern bool jtag_TestSetAndClear();
+extern bool jtag_TestSetUnallocatedSignal();
+extern bool jtag_TestSetInput();
+extern bool jtag_TestGet();
+extern bool jtag_TestGetUnallocated();
 #endif
