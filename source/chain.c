@@ -192,7 +192,7 @@ bool chain_Detect()
 
 		serial_Write("[+] %i Device(s) found, with total IR Length of %i\r\n", chain_Devices, chain_IRLength);
 
-		for(device = 0, device < chain_Devices, ++device)
+		for(device = 0; device < chain_Devices; ++device)
 		{
 			uint32_t idcode = chain_findIDCode();
 			if(idcode != 0)
@@ -201,7 +201,7 @@ bool chain_Detect()
 			}
 			else
 			{
-				serial_Write("[+]  Device %i - BYPASS\r\n", device +1)
+				serial_Write("[+]  Device %i - BYPASS\r\n", device +1);
 			}
 		} 		
 	}

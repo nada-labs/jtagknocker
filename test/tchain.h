@@ -24,5 +24,6 @@ extern bool chain_TestDeviceCount();
 extern bool chain_TestChainIRLength();
 extern bool chain_TestResetDRIDCode();
 extern bool chain_TestDetect();
+extern bool chain_TestResetDRIDCodes();
 
 #endif

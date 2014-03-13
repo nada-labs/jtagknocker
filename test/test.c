@@ -58,6 +58,7 @@ static const test_tFunc test_Functions[] =
 	chain_TestDeviceCount,
 	chain_TestChainIRLength,
 	chain_TestResetDRIDCode,
+	chain_TestResetDRIDCodes,
 };
 
 #define TESTS (sizeof(test_Functions)/sizeof(test_tFunc))	///< Number of functions in the test

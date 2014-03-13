@@ -400,6 +400,38 @@ bool chain_TestResetDRIDCode()
 }	
 
 /**
+ * @brief Test the function for finding an IDCODEs from a reset device chain
+ *
+ * Same as the test above, but not resetting the chain in between. The results
+ * should be the same but the input is exactly what would appear on the wire.
+ */
+bool chain_TestResetDRIDCodes()
+{
+	//ID codes we want to test
+	char IDTests_dr[] = { 0x77, 0x04, 0xA0, 0x4B, 0x09, 0x60, 0x94, 0x15, 0xBA, 0x41, 0x16, 0x04, 0xBA, 0x81, 0x02, 0x05, 0x98, 0x04, 0x11, 0x0E, 0x01}; 
+	uint32_t IDCodes[] = { 0x4BA00477, 0x15946009, 0, 0x020B20DD, 0x028140DD, 0, 0, 0x21C22093 }; 
+	const unsigned int tests = 8;
+	unsigned int test = 0;
+
+	chain_ir_len = 0;
+	chain_ir = NULL;	//IR isn't used.
+	usage_error = 0;
+	chain_dr = IDTests_dr;
+	chain_dr_len = (32*5)+3;
+	chain_Mock_jtagTAP_SetState(JTAGTAP_STATE_DR_SHIFT);
+
+	for(test = 0; test < tests; ++test)
+	{
+		uint32_t IdCode;
+		//test the function
+		IdCode = chain_findIDCode();
+		ASSERT(IdCode == IDCodes[test], "Test %i ID Code is incorrect: %08X, should be %08X", test, IdCode, IDCodes[test]);
+	}
+	ASSERT(usage_error == 0, "Usage Error: %i", usage_error);
+	return true;
+}
+
+/**
  * NULL function to get rid of serial_Write linking
  */
 int chain_Mock_serial_Write(const char *fmt, ...)
