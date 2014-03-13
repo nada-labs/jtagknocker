@@ -94,8 +94,7 @@ bool chain_TestFakeChain()
 		//get the TDO signal state and store it
 		unsigned int res = 0;
 		
-		chain_Mock_jtag_Clock();	//shift from TDI to TDO
-	
+		
 		if(chain_Mock_jtag_Get(JTAG_SIGNAL_TDO))
 		{
 			res = 1;
@@ -103,6 +102,8 @@ bool chain_TestFakeChain()
 
 		dr_sample[index_byte] &= ~(1 << index_bit);	//mask the bit off
 		dr_sample[index_byte] |= (res << index_bit);	//store the state
+
+		chain_Mock_jtag_Clock();	//shift from TDI to TDO
 	}
 
 	ASSERT(*((uint32_t* )dr_sample) == 0xAB00FF00, "DR output didn't match: %08X %08X", dr_sample, 0xAB00FF00);
@@ -136,12 +137,15 @@ bool chain_TestFakeChain()
 /**
  * @brief Fake the clock signal
  *
- * All the important stuff happens on a low to high clock transition, perform
- * data shifting as needed.
+ * All the important stuff happens on clock transitions, perform data shifting
+ * as needed.
  *
- * Data is shifted from TDI towards TDO at every rising edge of the clock in
- * shift_ir or shift_dr modes. This is the only part of the TAP we are 
- * simulating here.
+ * The contents of the selected register (instruction or data) are shifted out
+ * of TDO on the falling edge of TCK. Values presented at TDI are clocked into
+ * the selected register (instruction or test data) on a rising edge of TCK.
+ * 
+ * When clock is called the line is already in a low state and the first bit
+ * of the selected register has been clocked out.
  */
 void chain_Mock_jtag_Clock()
 {
@@ -151,13 +155,27 @@ void chain_Mock_jtag_Clock()
 	//select the right chain to use
 	if(TAPState == JTAGTAP_STATE_IR_SHIFT)
 	{
-		chain = chain_ir;
-		chain_len = chain_ir_len;
+		if(chain_ir != NULL)
+		{
+			chain = chain_ir;
+			chain_len = chain_ir_len;
+		}
+		else
+		{
+			usage_error = 5; //IR was selected when no IR was present (ie: it shouldn't have been used)
+		}
 	} 
 	else if (TAPState == JTAGTAP_STATE_DR_SHIFT)
 	{
-		chain = chain_dr;
-		chain_len = chain_dr_len;
+		if(chain_dr != NULL)
+		{
+			chain = chain_dr;
+			chain_len = chain_dr_len;
+		}
+		else
+		{
+			usage_error = 6; //DR was selected when it shouldn't have been
+		}
 	}
 	else
 	{
@@ -166,16 +184,23 @@ void chain_Mock_jtag_Clock()
 	}
 
 	//perform the data shift and replacement
+
+	//high CLOCK transition
 	index_byte = chain_reg_head/8;
 	index_bit = chain_reg_head % 8;
-
-	TDO = ((chain[index_byte] & (1<< index_bit)) != 0);	//set the state of tdo
 	chain[index_byte] &= ~(1<< index_bit);			//mask off the bit
 	if(TDI)
 	{
 		chain[index_byte] |= (1<< index_bit);		//store TDI
 	}
+	
+	//adjust the index
 	chain_reg_head = (chain_reg_head+1) % chain_len;	//increment and wrap bit index
+
+	//LOW clock transition
+	index_byte = chain_reg_head/8;
+	index_bit = chain_reg_head % 8;
+	TDO = ((chain[index_byte] & (1<< index_bit)) != 0);	//set the state of tdo
 }
 
 /**
@@ -183,25 +208,47 @@ void chain_Mock_jtag_Clock()
  *
  * We don't need to walk the state table, just reset some counters based on 
  * the state chosen.
+ * Because the clock ends low after the state transition, the first bit of the
+ * selected register needs to be clocked out.
  */
 void chain_Mock_jtagTAP_SetState(jtagTAP_TAPState target)
 {
-	if((target == JTAGTAP_STATE_IR_SHIFT) || (target == JTAGTAP_STATE_DR_SHIFT))
+	if(target == JTAGTAP_STATE_IR_SHIFT)
 	{
 		//reset the chain index
 		chain_reg_head = 0;
-	}
-	else 
-	{
-		if(target == JTAGTAP_STATE_RESET)
+		//clock out first bit of ir, if present
+		if(chain_ir != NULL)
 		{
-			//flag that reset was called
-			chain_reset = true;
+			TDO = ((chain_ir[0] & 1) == 1);
 		}
 		else
 		{
-			usage_error = 1;
+			usage_error = 5;	//IR used when not meant to
 		}
+	}
+	else if(target == JTAGTAP_STATE_DR_SHIFT)
+	{
+		//reset the chain index
+		chain_reg_head = 0;
+		//clock out first bit of dr, if present
+		if(chain_dr != NULL)
+		{
+			TDO = ((chain_dr[0] & 1) == 1);
+		}
+		else
+		{
+			usage_error = 6;	//IR used when not meant to
+		}
+	}
+	else if(target == JTAGTAP_STATE_RESET)
+	{
+		//flag that reset was called
+		chain_reset = true;
+	}
+	else
+	{
+		usage_error = 1;
 	}
 	TAPState = target;
 }
