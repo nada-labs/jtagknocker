@@ -11,7 +11,17 @@ Requirements
  An ARM GCC toolchain. (arm-none-eabi- assumed by default) 
  
 Building
- TBD
+ The following make targets are available:
+  all/jtagknocker
+  	Build the source and generates a elf file for loading into the STM32F3
+	discovery board.
+
+  test
+	Builds the test code. An elf file is left in the test directort that
+	can be loaded into the STM32F3 and output monitored on the serial pins.
+
+  clean
+	Standard cleanup target.
  
 Usage
  Wire port D pins to each pin to test on the target board, starting at PD0 
@@ -41,15 +51,7 @@ Usage
   chain	
 	Once a valid interface has been configured, scans the chain and 
 	determines the properities of the devices. It attempts to find the 
-	number of devices on the chain, their IDCODE and IR Length.
-
-  irenum [n]
-	Enumerates valid ir commands for device n on the chain. n is assumed 
-	to be all devices if left out. It is advisable to have the TRST
-	signal assigned for this command, otherwise hardware damage could
-	result.
-	Can only be called after a chain scan has been performed, see the 
-	chain command.
+	number of devices on the chain and their IDCODE(s).
 
   config [tck|tms|tdi|tdo|trst|srst|rtck [pin]]
 	Displays the pin number the signal is configured to, assigning if pin
@@ -88,35 +90,31 @@ Usage
 	Sets the debug message level. 
 	3 max, 0 for no debug messages, default level is 1.
 
-  device [n [idcode|irlen value]]
-	Shows information for devices in the chain, or configures properities
-	for a specific device.
-
   shift
 	Enters data shift mode. The prompt will change to >> and hex 
 	encoded data should be provided. Data read in from TDO will be 
 	returned.
 
-	This mode will exit when a invalid character (not 0-9a-f) is received.
-	the data is send LSB first and should be padded at the start to
-	make the entire size divisible by 4.
+	This mode will exit when a invalid character (not 0-9a-fA-F) is 
+	received. The data is send in little endian nibbles and should be 
+	pre-padded to bring the total size to a multiple of 4.
 
 	Example:
 	  >tap shift_ir
 	  RESET -> SHIFT_IR
 	  >shift
-	  >>(180)800
+	  >>(810)100
 	  >tap shift_dr
 	  SHIFT_IR -> SHIFT_DR
 	  >shift
-	  >>(00000000)BB04D040
+	  >>(00000000)DD02B020
 	  >
 
 	  This shifts in an IDCODE command (006) zero padded by 2 bits into
 	  the instruction register and the contents captured from CAPTURE_IR
-	  is returned. The idcode is then shifted out, which when bit-reversed
-	  is 0x020B20DD, an Altera EP2C8. The data in brackets above is sent
-	  by the user but not displayed.
+	  is returned. The idcode is then shifted out, which when nibble 
+	  reversed is 0x020B20DD, an Altera EP2C8. The data in brackets above
+	  is sent by the user but not displayed.
 
   binary
 	Enter binary mode, used by OpenOCD etc for faster data rates. 
