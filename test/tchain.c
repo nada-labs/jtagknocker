@@ -24,9 +24,11 @@
 #define jtag_Get		chain_Mock_jtag_Get
 #define jtag_Clock		chain_Mock_jtag_Clock
 #define jtagTAP_SetState	chain_Mock_jtagTAP_SetState
+#define serial_Write		chain_Mock_serial_Write		//get rid of a unnneded function
 
 #include "../source/jtag.h"
 #include "../source/jtagtap.h"
+#include "../source/chain.c"
 
 static unsigned int chain_ir_len;	///< Length of the fake chain instruction register, in bits
 static unsigned int chain_dr_len;	///< Length of the fake chain data register, in bits
@@ -279,4 +281,128 @@ void chain_Mock_jtag_Set(jtag_Signal sig, bool state)
 	{
 		usage_error = 3;
 	}
+}
+
+/**
+ * @brief Test the device counting algorithm
+ *
+ * To determine the number of devices on the chain, the following algorithm
+ * is used:
+ *	Enter into bypass mode (IR = 0xFF....)
+ *	Enter into shift_dr and fill with ones
+ * 	Clock a 0 through and count the clocks until it appears
+ *	DR can be left in whatever state
+ * When the device is in BYPASS mode, the data register has a length of one,
+ * so the devices on a chain is just the length of the data register. The DR
+ * value in BYPASS is 0.
+ */
+bool chain_TestDeviceCount()
+{
+	char devicecount_ir[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};		//Up to 48 bits of IR
+	char devicecount_dr[] = {0x00};	//Up to 8 bits of BYPASS data register	
+
+	//fake chain setup
+	chain_ir = devicecount_ir;
+	chain_ir_len = 47;	//seems like a good length...
+	chain_dr = devicecount_dr;
+	chain_dr_len = 3;	//there are going to be 3 devices on this chain.
+	usage_error = 0;
+
+	//module setup and test
+	chain_Devices = 99;
+	chain_IRLength = 47;	//chain_findDevices needs to know the total IR length
+	chain_findDevices();
+
+	//check results
+	ASSERT(memcmp(devicecount_ir, "\xFF\xFF\xFF\xFF\xFF\x7F", 6) == 0, "Not in BYPASS");
+	ASSERT(chain_Devices == chain_dr_len, "Wrong number of devices found: %i, should be %i", chain_Devices, chain_dr_len);
+	ASSERT(usage_error == 0, "Usage Error: %i", usage_error);
+	return true;
+}
+
+/**
+ * @brief Test the algorithm to determine the chain IR length
+ *
+ * Determining the chain IR length is similar to finding the number of devices
+ * on the chain, but only IR is used. If more than one device is on the chain
+ * this approach finds the sum of the device IR lengths. The IR should also be
+ * left in the BYPASS instruction (filled with ones)
+ */
+bool chain_TestChainIRLength()
+{
+	char chainirlen_ir[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};		//Up to 48 bits of IR
+
+	//fake chain setup
+	chain_ir = chainirlen_ir;
+	chain_ir_len = 47;	//seems like a good length...
+	chain_dr = NULL;	//DR isn't used
+	chain_dr_len = 0;	
+	usage_error = 0;
+
+	//module setup and test
+	chain_IRLength = 12345;
+	chain_findIRLength();
+
+	//check results
+	ASSERT(memcmp(chainirlen_ir, "\xFF\xFF\xFF\xFF\xFF\x7F", 6) == 0, "Not in BYPASS");
+	ASSERT(chain_IRLength == chain_ir_len, "Wrong IR length found: %i, should be %i", chain_IRLength, chain_ir_len);
+	ASSERT(usage_error == 0, "Usage Error: %i", usage_error);
+	return true;
+}
+
+/**
+ * @brief Test the function for finding an IDCODE from a reset device
+ *
+ * When a device enters RESET the instruction register is loaded with IDCODE
+ * (if supported) or BYPASS. By shifting from RESET to DR_SHIFT we can read
+ * out the ID code. ID Code is always 32 bits and BYPASS is always 1.
+ *
+ * The function under test assumes that the TAP has been reset and is in
+ * DR_SHIFT state.
+ */
+bool chain_TestResetDRIDCode()
+{
+	//ID codes we want to test
+	char IDTests_dr[][4] = {
+		{ 0x77, 0x04, 0xA0, 0x4B },	//TI LX4F120H5QRF
+		{ 0x09, 0x60, 0x94, 0x15 },	//ARM 946e Core in a Canon Digic 4 processor
+		{ 0x00, 0x00, 0x00, 0x00 },	//BYPASS
+		{ 0xDD, 0x20, 0x0B, 0x02 },	//Altera EP2C8
+		{ 0xDD, 0x40, 0x81, 0x02 },	//Altera EP4CGX110
+		{ 0x00, 0x00, 0x00, 0x00 },	//BYPASS
+		{ 0x00, 0x00, 0x00, 0x00 },	//BYPASS
+		{ 0x93, 0x20, 0xC2, 0x21 },	//Xilinx XCS500E
+	};
+	uint32_t IDCodes[] = { 0x4BA00477, 0x15946009, 0, 0x020B20DD, 0x028140DD, 0, 0, 0x21C22093 }; 
+	const unsigned int tests = 8;
+	unsigned int test = 0;
+
+	chain_ir_len = 0;
+	chain_ir = NULL;	//IR isn't used.
+	usage_error = 0;
+
+	for(test = 0; test < tests; ++test)
+	{
+		uint32_t IdCode;
+		//set up the fake DR
+		chain_dr = IDTests_dr[test];
+		chain_dr_len = (IDTests_dr[test][0] == 0x00 ? 1 : 32);
+	
+		//Set the chain state so TDO is the right value
+		chain_Mock_jtagTAP_SetState(JTAGTAP_STATE_DR_SHIFT);
+
+		//test the function
+		IdCode = chain_findIDCode();
+		ASSERT(IdCode == IDCodes[test], "Test %i ID Code is incorrect: %08X, should be %08X", test, IdCode, IDCodes[test]);
+	}
+	ASSERT(usage_error == 0, "Usage Error: %i", usage_error);
+	return true;
+}	
+
+/**
+ * NULL function to get rid of serial_Write linking
+ */
+int chain_Mock_serial_Write(const char *fmt, ...)
+{
+
 }

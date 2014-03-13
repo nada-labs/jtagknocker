@@ -20,12 +20,9 @@
 #include <stdbool.h>
 
 extern bool chain_TestFakeChain();
-extern bool chain_TestInitilization();
 extern bool chain_TestDeviceCount();
 extern bool chain_TestChainIRLength();
 extern bool chain_TestResetDRIDCode();
-extern bool chain_TestResetDRBypass();
-extern bool chain_TestResetDRIDCodes();
-extern bool chain_TestDeviceIRLen();
+extern bool chain_TestDetect();
 
 #endif
