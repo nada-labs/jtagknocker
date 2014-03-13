@@ -25,18 +25,12 @@
 //add test include files here
 #include "tjtag.h"
 #include "tjtagtap.h"
-
-//Function prototypes for testing tests...
-bool test_AssertPass();
-bool test_AssertFail();
-bool test_AssertFailTest();
+#include "tchain.h"
 
 typedef bool (*test_tFunc)(void);
 
 static const test_tFunc test_Functions[] = 
 {
-	test_AssertPass,
-	test_AssertFail,	
 	//Add test functions here
 
 	//JTAG module tests
@@ -58,6 +52,9 @@ static const test_tFunc test_Functions[] =
 	jtagTAP_TestInitilization,
 	jtagTAP_TestTxFromUnknown,
 	jtagTAP_TestReset,
+
+	//Chain tests
+	chain_TestFakeChain,
 };
 
 #define TESTS (sizeof(test_Functions)/sizeof(test_tFunc))	///< Number of functions in the test
@@ -93,39 +90,6 @@ void main()
 	test_Write("Done.\r\n%i tests run, %i passed, %i failed.\r\n", TESTS, tests_passed, tests_failed);
 
 	while(true);		
-}
-
-/**
- * @brief Tests ASSERT works for true case
- *
- * Check that the ASSERT macro works correctly in the true case
- */
-bool test_AssertPass()
-{
-	ASSERT(true, "ASSERT failed for true case.");
-	return true;
-}
-
-/**
- * @brief Tests ASSERT works for false case
- *
- * Check that the ASSERT macro works correctly in the false case
- */
-bool test_AssertFail()
-{
-	ASSERT(!test_AssertFailTest(), "ASSERT failed for false case.");
-	return true;
-}
-
-/**
- * @brief Performs the ASSERT false case test
- *
- * Check that the ASSERT macro works correctly in the false case
- */
-bool test_AssertFailTest()
-{
-	ASSERT(false, "ASSERT false case test case, this isn't an error.");
-	return true;
 }
 
 //Functions to keep newlib happy
