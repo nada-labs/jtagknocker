@@ -34,7 +34,6 @@ void main()
 	rcc_clock_setup_hsi(&hsi_8mhz[CLOCK_64MHZ]);
 	serial_Init();
 
-	knock_Knock();
 	//processing
 	while(true)
 	{
@@ -45,6 +44,7 @@ void main()
 	while(true); 
 }
 
+//functions to keep newlib happy
 void *_sbrk(int incr)
 {
 	return((void*)(-1));

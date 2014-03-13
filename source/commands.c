@@ -17,7 +17,6 @@
  */
 #include "commands.h"
 #include "serial.h"
-#include "commands.yy.h"
 
 /**
  * @brief Initalize the command module
