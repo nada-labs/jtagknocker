@@ -56,13 +56,19 @@ bool jtag_TestInitSignalAlloc()
 
 	jtag_Init();
 
-	//check that they are all set to the default state
-	for(index = 0; index < JTAG_SIGNAL_MAX; ++index)
+	//check that they are all set to the default state.
+	//TCK - TDO are assigned to the first 4 pins by default, the rest are unallocated.
+	ASSERT((jtag_Signals[JTAG_SIGNAL_TCK] == 0), "JTAG signal TCK not allocated correctly.");
+	ASSERT((jtag_Signals[JTAG_SIGNAL_TMS] == 1), "JTAG signal TMS not allocated correctly.");
+	ASSERT((jtag_Signals[JTAG_SIGNAL_TDI] == 2), "JTAG signal TDI not allocated correctly.");
+	ASSERT((jtag_Signals[JTAG_SIGNAL_TDO] == 3), "JTAG signal TDO not allocated correctly.");
+	for(index = JTAG_SIGNAL_TRST; index < JTAG_SIGNAL_MAX; ++index)
 	{
 		ASSERT((jtag_Signals[index] == JTAG_SIGNAL_NOT_ALLOCATED), "JTAG signal state not initialized correctly. Signal: %i", index);
 	}
 	
-	ASSERT((jtag_PinUsage == 0), "Pin allocation wasn't initialized correctly.");
+	//first four pins are allocated
+	ASSERT((jtag_PinUsage == 0x0F), "Pin allocation wasn't initialized correctly.");
 
 	return true;
 }
@@ -95,8 +101,8 @@ bool jtag_TestInitRegisterSetup()
 	//	01 Gen purpose output mode
 	//	10 Alternate function mode
 	//	11 Analog mode.
-	//MODER should be all zeros to set all GPIO D pins to inputs.
-	ASSERT((GPIOD_MODER == 0x00000000), "GPIO Mode set incorrectly: %08X, should be %08X.", GPIOD_MODER, 0);
+	//MODER should be all zeros, except for the lower 3 pins, which should be '01'
+	ASSERT((GPIOD_MODER == 0x00000015), "GPIO Mode set incorrectly: %08X, should be %08X.", GPIOD_MODER, 0x15);
 
 	//OTYPER is 1 bit per pin, with bits 0 - 15 defined as below:
 	//	0 Push-Pull Output
@@ -150,7 +156,14 @@ bool jtag_TestInitRegisterSetup()
 bool jtag_TestSignalConfigSet()
 {
 	const unsigned int pin_num = 7;
-	jtag_Init();	//Setup
+	unsigned int i;
+	//Setup
+	jtag_PinUsage = 0;
+	for(i = 0; i < JTAG_SIGNAL_MAX; ++i)
+	{
+		jtag_Signals[i] = JTAG_SIGNAL_NOT_ALLOCATED;
+	}
+
 
 	jtag_Cfg(JTAG_SIGNAL_TCK, pin_num);	//configure the pin
 
@@ -174,7 +187,13 @@ bool jtag_TestSignalConfigSet()
 bool jtag_TestSignalConfigSetInput()
 {
 	const unsigned int pin_num = 8;
-	jtag_Init();	//Setup
+	unsigned int i;
+	//Setup
+	jtag_PinUsage = 0;
+	for(i = 0; i < JTAG_SIGNAL_MAX; ++i)
+	{
+		jtag_Signals[i] = JTAG_SIGNAL_NOT_ALLOCATED;
+	}
 
 	jtag_Cfg(JTAG_SIGNAL_TDO, pin_num);	//configure the pin
 
@@ -202,15 +221,15 @@ bool jtag_TestSignalConfigSetInvalid()
 	unsigned int old_PinUsage;
 	uint32_t old_MODER;
 
-	jtag_Init();	//Setup
-
+	jtag_Init();
+	jtag_Cfg(JTAG_SIGNAL_TMS, JTAG_SIGNAL_NOT_ALLOCATED);
 	jtag_Cfg(JTAG_SIGNAL_TMS, pin_num);	//configure the pin
 
 	//to set an input MODER should be set to 00 for the pin.
-	ASSERT((GPIOD_MODER ==  0), "Mode set incorrectly: %08X, should be %08X.", GPIOD_MODER, 0);
+	ASSERT((GPIOD_MODER ==  0x11), "Mode set incorrectly: %08X, should be %08X.", GPIOD_MODER, 0x11);
 
 	// has the pin been marked as assigned
-	ASSERT((jtag_PinUsage == 0), "Pin was marked as allocated");
+	ASSERT((jtag_PinUsage == 0x0D), "Pin was marked as allocated");
 
 	// has the correct pin been assigned to the signal
 	ASSERT((jtag_Signals[JTAG_SIGNAL_TMS] == JTAG_SIGNAL_NOT_ALLOCATED), "Pin number was assigned to a signal");
@@ -239,8 +258,14 @@ bool jtag_TestSignalConfigSetInvalid()
 bool jtag_TestSignalConfigUnSet()
 {
 	const unsigned int pin_num = 5;
-	//setup
-	jtag_Init();	
+	unsigned int i;
+	//Setup
+	jtag_PinUsage = 0;
+	for(i = 0; i < JTAG_SIGNAL_MAX; ++i)
+	{
+		jtag_Signals[i] = JTAG_SIGNAL_NOT_ALLOCATED;
+	}
+
 	jtag_Cfg(JTAG_SIGNAL_TCK, pin_num);
 	jtag_Set(JTAG_SIGNAL_TCK, true);
 
@@ -275,8 +300,14 @@ bool jtag_TestSignalConfigAlreadySetPin()
 	uint32_t old_MODER;
 	uint32_t old_BSRR;
 
-	//setup
-	jtag_Init();	
+	unsigned int i;
+	//Setup
+	jtag_PinUsage = 0;
+	for(i = 0; i < JTAG_SIGNAL_MAX; ++i)
+	{
+		jtag_Signals[i] = JTAG_SIGNAL_NOT_ALLOCATED;
+	}
+
 	jtag_Cfg(JTAG_SIGNAL_TCK, pin_num);
 	jtag_Set(JTAG_SIGNAL_TCK, true);
 
@@ -308,8 +339,14 @@ bool jtag_TestSignalConfigAlreadySetSig()
 	const unsigned int pin_num = 5;
 	const unsigned int old_pin_num = 7;
 
-	//setup
-	jtag_Init();	
+	unsigned int i;
+	//Setup
+	jtag_PinUsage = 0;
+	for(i = 0; i < JTAG_SIGNAL_MAX; ++i)
+	{
+		jtag_Signals[i] = JTAG_SIGNAL_NOT_ALLOCATED;
+	}
+
 	jtag_Cfg(JTAG_SIGNAL_TCK, old_pin_num);
 	jtag_Set(JTAG_SIGNAL_TCK, true);
 
@@ -337,7 +374,7 @@ bool jtag_TestSignalConfigAlreadySetSig()
  */
 bool jtag_TestSetAndClear()
 {
-	const unsigned int pin_num = 3;
+	const unsigned int pin_num = 5;
 
 	//setup
 	jtag_Init();
@@ -390,7 +427,6 @@ bool jtag_TestSetInput()
 {
 	//setup
 	jtag_Init();
-	jtag_Cfg(JTAG_SIGNAL_TDO, 3);
 
 	GPIOD_BSRR = 0;	// clear the register (should be zero from jtag_Init anyway)
 	
@@ -414,17 +450,15 @@ bool jtag_TestGet()
 {
 	bool val;
 	jtag_Init();
-	jtag_Cfg(JTAG_SIGNAL_TDO, 3);
-	jtag_Cfg(JTAG_SIGNAL_TMS, 8);
 
-	GPIOD_IDR = (1<<3) | (1<<8);
+	GPIOD_IDR = (1<<3) | (1<<1);
 
 	val = jtag_Get(JTAG_SIGNAL_TDO);
 	ASSERT(val, "Signal not active.");
 	val = jtag_Get(JTAG_SIGNAL_TMS);
 	ASSERT(val, "Signal not active.");
 
-	GPIOD_IDR = (1<<8);
+	GPIOD_IDR = (1<<1);
 	
 	val = jtag_Get(JTAG_SIGNAL_TDO);
 	ASSERT(!val, "Signal active.");
@@ -453,7 +487,7 @@ bool jtag_TestGetUnallocated()
 	
 	GPIOD_IDR = 0xFFFFFFFF;
 
-	val = jtag_Get(JTAG_SIGNAL_TDO);
+	val = jtag_Get(JTAG_SIGNAL_TRST);
 	//no bits in BSRR shoul be set.
 	ASSERT(!val, "Unallocated signal active.");
 	
@@ -470,11 +504,11 @@ bool jtag_TestIsAllocated()
 	bool val;
 	jtag_Init();
 	
-	val = jtag_IsAllocated(JTAG_SIGNAL_TDI);
+	val = jtag_IsAllocated(JTAG_SIGNAL_TRST);
 	ASSERT(!val, "Signal apparaently allocated");
 	
-	jtag_Cfg(JTAG_SIGNAL_TDI, 4);
-	val = jtag_IsAllocated(JTAG_SIGNAL_TDI);
+	jtag_Cfg(JTAG_SIGNAL_TRST, 4);
+	val = jtag_IsAllocated(JTAG_SIGNAL_TRST);
 	ASSERT(val, "Signal apparaently not allocated");
 
 	return true;

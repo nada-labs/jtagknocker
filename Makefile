@@ -12,7 +12,7 @@ export TOP_DIR = $(shell pwd)
 
 .PHONY: all clean source test docs
 
-all: source docs
+all: source
 
 source:
 	@make -C source 

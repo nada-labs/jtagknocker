@@ -47,6 +47,11 @@ void jtag_Init()
 	GPIOD_BSRR = 0xFFFF0000;
 	RCC_AHBENR |= 0x00100000;	//Enable GPIOD clock
 
+	//assign the default signal allocation
+	jtag_Cfg(JTAG_SIGNAL_TCK, 0);
+	jtag_Cfg(JTAG_SIGNAL_TMS, 1);
+	jtag_Cfg(JTAG_SIGNAL_TDI, 2);
+	jtag_Cfg(JTAG_SIGNAL_TDO, 3);
 }
 
 /**
