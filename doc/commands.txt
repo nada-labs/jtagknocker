@@ -1,0 +1,90 @@
+/*!
+@page commands Commands and Protocol
+
+ The folling commands are valid:
+  help
+	Displays this list of valid commands.
+
+  scan npins [reset|bypass]
+	Scans for a JTAG interface on pins 1 - npins
+	  reset mode uses a TAP Reset to look for idcodes, this mode will fail
+	  if no devices on the chain support IDCODE. Takes 
+	  (npins*(npins-1)+(npins-2) operations.
+			
+	  bypass mode scans BYPASS commands into the TAPs and looks for TDO. 
+	  Takes (npins*(npins-1)*(npins-2) operations.
+
+	If the mode is not specified, the scan defaults to reset.
+	All pins are left deconfigured when the scan finishes.
+
+  chain	
+	Once a valid interface has been configured, scans the chain and 
+	determines the properities of the devices. It attempts to find the 
+	number of devices on the chain and their IDCODE(s).
+
+  config [tck|tms|tdi|tdo|trst|srst|rtck [pin]]
+	Displays the pin number the signal is configured to, assigning if pin
+	is provided.
+	The config command by itself will return the current pin assignments
+	for all signals, which by default is:
+	  Signal	Pin
+	  TCK		1
+	  TMS		2
+	  TDI		3
+	  TDO		4
+	Specifing a pin of 0 deconfigures the signal.
+  
+  config clock [rate|adaptive]
+	Displays the JTAG clock speed, setting it to rate if provided.
+	rate is in kHz.
+	Adaptive clocking is only valid when the rclk signal has been 
+	assigned and waits for the TAP to acknowledge the clock transition
+	before moving on.
+
+  clock n
+	Toggle the clock line n times.
+
+  tck|tms|tdi|tdo|trst|srst|rtck [state]
+	The current state of the requested signal is to state, if provided, 
+	and displayed. Setting is only valid for outputs (not tdo or rclk).
+	  A state of 1 is logic high, A state of 0 is logic low.
+
+  tap [reset|run_idle|shift_dr|pause_dr|shift_ir|pause_ir]
+	Displays the current state of the TAP controller, and sets it to the
+	provided state. 
+	TRST will be used to move to the reset state, if configured, otherwise
+	a TAP state walk will be used.
+
+  debug level
+	Sets the debug message level. 
+	3 max, 0 for no debug messages, default level is 1.
+
+  shift
+	Enters data shift mode. The prompt will change to >> and hex 
+	encoded data should be provided. Data read in from TDO will be 
+	returned.
+
+	This mode will exit when a invalid character (not 0-9a-fA-F) is 
+	received. The data is send in little endian nibbles and should be 
+	pre-padded to bring the total size to a multiple of 4.
+
+	Example:
+	  >tap shift_ir
+	  RESET -> SHIFT_IR
+	  >shift
+	  >>(810)100
+	  >tap shift_dr
+	  SHIFT_IR -> SHIFT_DR
+	  >shift
+	  >>(00000000)DD02B020
+	  >
+
+	  This shifts in an IDCODE command (006) zero padded by 2 bits into
+	  the instruction register and the contents captured from CAPTURE_IR
+	  is returned. The idcode is then shifted out, which when nibble 
+	  reversed is 0x020B20DD, an Altera EP2C8. The data in brackets above
+	  is sent by the user but not displayed.
+
+  binary
+	Enter binary mode, used by OpenOCD etc for faster data rates. 
+*/

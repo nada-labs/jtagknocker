@@ -1,0 +1,13 @@
+/*!
+@page usage General Usage
+
+Usage
+ Wire port D pins to each pin to test on the target board, starting at PD0 
+ (pin 1). If you don't want to damage the target board and/or the STM32, 
+ place 330 ohm resistors in series with each connection to limit current to 
+ 10mA.
+ 
+ Connect the development board to a serial interface and open up a 
+ terminal. Hit Enter to get a prompt.
+
+*/

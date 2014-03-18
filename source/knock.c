@@ -141,7 +141,7 @@ static void knock_ScanReset(unsigned int tck, unsigned int tms)
  * @param[in] tdi_state The current state of all pins.
  * @param[in] nresults The number of results in the scan_results array.
  */
-static void knock_ScanResetFindTDI(unsigned int tck, unsigned int tms, uint16_t pins, uint16_t tdi_state, unsigned int nresuts)
+static void knock_ScanResetFindTDI(unsigned int tck, unsigned int tms, uint16_t pins, uint16_t tdi_state, unsigned int nresults)
 {
 	unsigned int tdo;
 
@@ -163,7 +163,7 @@ static void knock_ScanResetFindTDI(unsigned int tck, unsigned int tms, uint16_t 
 					jtag_Cfg(JTAG_SIGNAL_TDI, tdi);
 					jtag_Set(JTAG_SIGNAL_TDI, ((tdi_state >> tdi) & 1) == 0);	//toggle the TDI pin
 					
-					for(clocks = 0; clocks < nresuts; ++clocks)
+					for(clocks = 0; clocks < nresults; ++clocks)
 					{
 						unsigned int tdo_val = (GPIOD_IDR & (1 << tdo));
 						jtag_Clock();
@@ -177,7 +177,7 @@ static void knock_ScanResetFindTDI(unsigned int tck, unsigned int tms, uint16_t 
 
 					//reset the pin state and clock again, undoing what we just did
 					jtag_Set(JTAG_SIGNAL_TDI, ((tdi_state >> tdi) & 1) == 1);	//toggle the TDI pin
-					for(clocks = 0; clocks < nresuts; ++clocks)
+					for(clocks = 0; clocks < nresults; ++clocks)
 					{
 						jtag_Clock();	
 					}
@@ -297,15 +297,13 @@ static void knock_ScanBypass(unsigned int tck, unsigned int tms)
 /**
  * @brief Try and find a JTAG chain
  *
- * @param[in] mode The scanning mode to use, see #ref knock_Mode
+ * @param[in] mode The scanning mode to use, see #knock_Mode
  * @param[in] pins The number of pins that are wired up, must be >= 4
  */
 void knock_Scan(knock_Mode mode, unsigned int pins)
 {
 	unsigned int tck, tms;
 	knock_PinCount = pins;
-
-	serial_Write("Scanning in reset mode...\r\n");
 
 	for(tck = 0; tck < knock_PinCount; ++tck)
 	{
@@ -316,10 +314,12 @@ void knock_Scan(knock_Mode mode, unsigned int pins)
 				switch(mode)
 				{
 					case KNOCK_MODE_RESET:
+						serial_Write("Scanning in reset mode...\r\n");
 						knock_ScanReset(tck, tms);
 						break;
 
 					case KNOCK_MODE_BYPASS:
+						serial_Write("Scanning in bypass mode...\r\n");
 						knock_ScanBypass(tck, tms);
 						break;
 				}

@@ -141,7 +141,7 @@ static bool chain_findDevices()
  * (if supported) or BYPASS. By shifting from RESET to DR_SHIFT we can read
  * out the ID code. ID Code is always 32 bits and BYPASS is always 1.
  *
- * @req TAP has been reset and state shifted to DR_SHIFT
+ * @pre TAP has been reset and state shifted to DR_SHIFT
  */
 uint32_t chain_findIDCode()
 {

@@ -139,7 +139,7 @@ void cmd_Config()
  * is out of range.
  *
  * @param[in] Signal The JTAG signal to configure
- * @param[in] The pin to assign the signal to, or CMD_ARG_NONE to display the
+ * @param[in] Pin The pin to assign the signal to, or CMD_ARG_NONE to display the
  * current assigned pin.
  */
 void cmd_SignalConfig(jtag_Signal Signal, int Pin)

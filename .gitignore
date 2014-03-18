@@ -2,6 +2,7 @@
 !.git*
 *.o
 *~
+html
 
 Debug
 Release

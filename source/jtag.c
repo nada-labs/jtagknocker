@@ -55,7 +55,7 @@ void jtag_Init()
  * The supported pin numbers are from 0 - 15 and correspond to PD0 - PD15
  * Respectively.
  *
- * @param[in] pin The JTAG signal to configure.
+ * @param[in] sig The JTAG signal to configure.
  * @param[in] num The pin number the signal is connected to, or
  * JTAG_SIGNAL_NOT_ALLOCATED to de-configure the pin.
  */
@@ -108,8 +108,8 @@ void jtag_Cfg(jtag_Signal sig, int num)
 /**
  * @brief Set one of the JTAG signals to the provided value
  *
- * @param[in] pin The pin to set
- * @param[in] val, true for High, false for Low.
+ * @param[in] sig The signal to set
+ * @param[in] val true for High, false for Low.
  */
 void jtag_Set(jtag_Signal sig, bool val)
 {
@@ -136,8 +136,9 @@ void jtag_Set(jtag_Signal sig, bool val)
 /**
  *@brief Retruns the state of one of the JTAG signals
  *
- *@retval true pin is high
- *@retval false pin is low
+ *@param sig Signal to get the state of
+ *@retval true signal is high
+ *@retval false signal is low
  */
 bool jtag_Get(jtag_Signal sig)
 {
@@ -178,6 +179,7 @@ void jtag_Clock()
 /**
  * @brief Get the allocated state of a signal
  *
+ * @param sig Signal to test allocation
  * @retval true Signal allocated to a pin
  * @retval false Signal no allocated to a pin
  */
