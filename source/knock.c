@@ -54,10 +54,6 @@ static void knock_ScanReset(unsigned int tck, unsigned int tms)
 	uint16_t data_interesting = 0x0000;
 	uint16_t scan_results[KNOCK_RESULTS];
 
-	jtag_Init();
-	jtag_Cfg(JTAG_SIGNAL_TCK, tck);
-	jtag_Cfg(JTAG_SIGNAL_TMS, tms);
-
 	jtagTAP_SetState(JTAGTAP_STATE_UNKNOWN);
 	jtagTAP_SetState(JTAGTAP_STATE_DR_SHIFT);
 	
@@ -217,10 +213,6 @@ static void knock_ScanBypass(unsigned int tck, unsigned int tms)
 		{
 			uint16_t tdo_candidates;
 			int tdo_change_clocks[16];
-			jtag_Init();
-
-			jtag_Cfg(JTAG_SIGNAL_TCK, tck);
-			jtag_Cfg(JTAG_SIGNAL_TMS, tms);
 
 			//we can use this pin
 			jtag_Cfg(JTAG_SIGNAL_TDI, tdi);
@@ -297,32 +289,47 @@ static void knock_ScanBypass(unsigned int tck, unsigned int tms)
 /**
  * @brief Try and find a JTAG chain
  *
+ * Unassignes all signals before scanning. A known pin shouldn't be used
+ * in the scan.
+ *
  * @param[in] mode The scanning mode to use, see #knock_Mode
  * @param[in] pins The number of pins that are wired up, must be >= 4
  */
 void knock_Scan(knock_Mode mode, unsigned int pins)
 {
 	unsigned int tck, tms;
+	jtag_Signal sig;
 	knock_PinCount = pins;
 
+	//unassign all signals
+	for(sig = JTAG_SIGNAL_TCK; sig < JTAG_SIGNAL_MAX; ++sig)
+	{
+		jtag_Cfg(sig, JTAG_SIGNAL_NOT_ALLOCATED);
+	}
+
+	serial_Write("Scanning for JTAG port...\r\n");
 	for(tck = 0; tck < knock_PinCount; ++tck)
 	{
 		for(tms = 0; tms < knock_PinCount; ++tms)
 		{
 			if(tck != tms)
 			{
+				//assign the JTAG signals for this iteration
+				jtag_Cfg(JTAG_SIGNAL_TCK, tck);
+				jtag_Cfg(JTAG_SIGNAL_TMS, tms);
 				switch(mode)
 				{
 					case KNOCK_MODE_RESET:
-						serial_Write("Scanning in reset mode...\r\n");
 						knock_ScanReset(tck, tms);
 						break;
 
 					case KNOCK_MODE_BYPASS:
-						serial_Write("Scanning in bypass mode...\r\n");
 						knock_ScanBypass(tck, tms);
 						break;
 				}
+				//unassign the signals
+				jtag_Cfg(JTAG_SIGNAL_TCK, JTAG_SIGNAL_NOT_ALLOCATED);
+				jtag_Cfg(JTAG_SIGNAL_TMS, JTAG_SIGNAL_NOT_ALLOCATED);
 			}
 		}
 	}	
