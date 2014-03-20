@@ -1,6 +1,35 @@
 /*!
-@page commands Commands and Protocol
+@page commands Protocol and Commands
+@section proto Protocol Specification
 
+Commands and Replies are line based, terminated by CRLF and space delimited. 
+Commands can also be terminated by a single LF. Commands are issued at a 
+prompt '>' and once a command is executed a success 'OK' or error 'ERROR' 
+reply will be given, to indicate the status of that command. Additional 
+information may be provided by a command to indicate results or more error 
+information, but this will be at a message level of GENERAL (1) or greater.
+
+@subsection protoex Protocol Example
+
+    > help
+    Valid Commands: 
+     help scan chain config clock tap message shift tdi tdo tck tms trst srst
+    OK
+    > 
+
+The `help` command was issued at the prompt and it responded with the list of
+valid commands. As the command completed successfully, it responded with OK
+and a new prompt was issued.
+
+    > confg
+    Invalid command
+    ERROR
+    > 
+
+In this case a command was mispelled and as it didn't execute correctly, an
+error response was returned, followed by another prompt.
+
+@section cmds Command List
  The folling commands are valid:
   help
 	Displays this list of valid commands.
@@ -55,9 +84,9 @@
 	TRST will be used to move to the reset state, if configured, otherwise
 	a TAP state walk will be used.
 
-  debug level
-	Sets the debug message level. 
-	3 max, 0 for no debug messages, default level is 1.
+  message level
+	Sets the message level. 
+	3 for all messages, 0 for required messages only, default level is 1.
 
   shift
 	Enters data shift mode. The prompt will change to >> and hex 
@@ -84,7 +113,4 @@
 	  is returned. The idcode is then shifted out, which when nibble 
 	  reversed is 0x020B20DD, an Altera EP2C8. The data in brackets above
 	  is sent by the user but not displayed.
-
-  binary
-	Enter binary mode, used by OpenOCD etc for faster data rates. 
 */
