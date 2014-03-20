@@ -26,6 +26,7 @@
 #include "tjtag.h"
 #include "tjtagtap.h"
 #include "tchain.h"
+#include "tmessage.h"
 
 typedef bool (*test_tFunc)(void);
 
@@ -59,6 +60,11 @@ static const test_tFunc test_Functions[] =
 	chain_TestChainIRLength,
 	chain_TestResetDRIDCode,
 	chain_TestResetDRIDCodes,
+
+	//Message tests
+	message_TestInitialization,
+	message_TestSetLevel,
+	message_TestMessages,
 };
 
 #define TESTS (sizeof(test_Functions)/sizeof(test_tFunc))	///< Number of functions in the test
