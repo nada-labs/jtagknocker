@@ -16,7 +16,7 @@
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "commands.h"
-#include "serial.h"
+#include "message.h"
 
 /**
  * @brief Initalize the command module
@@ -47,7 +47,7 @@ void cmd_Process(char *Buffer, unsigned int Length)
  */
 void cmd_Help()
 {
-	serial_Write("cmd_Help();\n");
+	message_Write(MESSAGE_LEVEL_VERBOSE, "cmd_Help();\n");
 }
 
 /**
@@ -58,7 +58,7 @@ void cmd_Help()
  */
 void cmd_Binary ()
 {
-	serial_Write("cmd_Binary();\n");
+	message_Write(MESSAGE_LEVEL_VERBOSE, "cmd_Binary();\n");
 }
 
 /**
@@ -70,7 +70,7 @@ void cmd_Binary ()
  */
 void cmd_Shift()
 {
-	serial_Write("cmd_Shift();\n");
+	message_Write(MESSAGE_LEVEL_VERBOSE, "cmd_Shift();\n");
 }
 
 /**
@@ -84,7 +84,7 @@ void cmd_Shift()
  */
 void cmd_Device(int Device, int Attribute, int Value)
 {
-	serial_Write("cmd_Device(%i, %i, %i);\n", Device, Attribute, Value);
+	message_Write(MESSAGE_LEVEL_VERBOSE, "cmd_Device(%i, %i, %i);\n", Device, Attribute, Value);
 }
 
 /**
@@ -96,7 +96,7 @@ void cmd_Device(int Device, int Attribute, int Value)
  */
 void cmd_Debug(int Level)
 {
-	serial_Write("cmd_Debug(%i);\n", Level);
+	message_Write(MESSAGE_LEVEL_VERBOSE, "cmd_Debug(%i);\n", Level);
 }
 
 /**
@@ -107,7 +107,7 @@ void cmd_Debug(int Level)
  */
 void cmd_Tap(jtagTAP_TAPState State)
 {
-	serial_Write("cmd_Tap(%i);\n", State);
+	message_Write(MESSAGE_LEVEL_VERBOSE, "cmd_Tap(%i);\n", State);
 }
 
 /**
@@ -119,7 +119,7 @@ void cmd_Tap(jtagTAP_TAPState State)
  */
 void cmd_Clock(int Counts)
 {
-	serial_Write("cmd_Clock(%i);\n", Counts);
+	message_Write(MESSAGE_LEVEL_VERBOSE, "cmd_Clock(%i);\n", Counts);
 }
 
 /**
@@ -128,7 +128,7 @@ void cmd_Clock(int Counts)
  */
 void cmd_Config()
 {
-	serial_Write("cmd_Config();\n");
+	message_Write(MESSAGE_LEVEL_VERBOSE, "cmd_Config();\n");
 }
 
 /**
@@ -144,7 +144,7 @@ void cmd_Config()
  */
 void cmd_SignalConfig(jtag_Signal Signal, int Pin)
 {
-	serial_Write("cmd_SignalConfig(%i, %i);\n", Signal, Pin);
+	message_Write(MESSAGE_LEVEL_VERBOSE, "cmd_SignalConfig(%i, %i);\n", Signal, Pin);
 }
 
 /**
@@ -157,7 +157,7 @@ void cmd_SignalConfig(jtag_Signal Signal, int Pin)
  */
 void cmd_ConfigClock(int Rate)
 {
-	serial_Write("cmd_ConfigClock(%i);\n", Rate);
+	message_Write(MESSAGE_LEVEL_VERBOSE, "cmd_ConfigClock(%i);\n", Rate);
 }
 
 /**
@@ -174,7 +174,7 @@ void cmd_ConfigClock(int Rate)
  */
 void cmd_IREnum(int Device)
 {
-	serial_Write("cmd_IREnum(%i);\n", Device);
+	message_Write(MESSAGE_LEVEL_VERBOSE, "cmd_IREnum(%i);\n", Device);
 }
 
 /**
@@ -183,7 +183,7 @@ void cmd_IREnum(int Device)
  */
 void cmd_Chain()
 {
-	serial_Write("cmd_Chain();\n");
+	message_Write(MESSAGE_LEVEL_VERBOSE, "cmd_Chain();\n");
 }
 
 /**
@@ -195,7 +195,7 @@ void cmd_Chain()
  */
 void cmd_Scan(int Pins, int Mode)
 {
-	serial_Write("cmd_Scan(%i, %i);\n", Pins, Mode);
+	message_Write(MESSAGE_LEVEL_VERBOSE, "cmd_Scan(%i, %i);\n", Pins, Mode);
 }
 
 /**
@@ -206,7 +206,7 @@ void cmd_Scan(int Pins, int Mode)
  */
 void cmd_Signal(jtag_Signal Signal, int State)
 {
-	serial_Write("cmd_Signal(%i, %i);\n", Signal, State);
+	message_Write(MESSAGE_LEVEL_VERBOSE, "cmd_Signal(%i, %i);\n", Signal, State);
 }
 
 

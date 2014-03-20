@@ -18,7 +18,7 @@
 #if !defined(_TEST_H_)
 #define _TEST_H_
 
-extern int test_Write(const char *fmt, ...);
+extern void test_Write(const char *fmt, ...);
 #define NULL ((void *) 0)
 /**
  * @brief Test an operation and report message

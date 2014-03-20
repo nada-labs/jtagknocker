@@ -18,11 +18,8 @@
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/usart.h>
 #include <libopencm3/stm32/rcc.h>
-#include <strings.h>
-#include <stdarg.h>
 #include "serial.h"
 
-#define SERIAL_WRITE_BUFFER		(256)
 void serial_Init()
 {
 	//UART on PA2 (TX) and PA3 (RX) @ 115200,8,N,1	
@@ -51,15 +48,3 @@ void serial_Send(const char *buffer, const unsigned int len)
 	}
 }
 
-int serial_Write(const char *fmt, ...)
-{
-	char buffer[SERIAL_WRITE_BUFFER];
-	int n;
-	va_list args;
-	va_start(args, fmt);
-	n = vsnprintf(buffer, SERIAL_WRITE_BUFFER, fmt, args);
-	if((n > 0) && (n < SERIAL_WRITE_BUFFER))
-	{
-		serial_Send(buffer, n);
-	}
-}

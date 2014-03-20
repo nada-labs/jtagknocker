@@ -20,6 +20,5 @@
 
 void serial_Init();
 void serial_Send(const char *buffer, unsigned int len);
-int serial_Write(const char *fmt, ...);
 
 #endif

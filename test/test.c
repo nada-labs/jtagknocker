@@ -18,15 +18,18 @@
 
 #include "test.h"
 #include <libopencm3/stm32/rcc.h>
-
-#define serial_Write test_Write		///< renaming the function
-#include "../source/serial.c" 		// Include the C file to get the functions we need without linking against it
+#include <libopencm3/stm32/gpio.h>
+#include <libopencm3/stm32/usart.h>
+#include <strings.h>
+#include <stdarg.h>
 
 //add test include files here
 #include "tjtag.h"
 #include "tjtagtap.h"
 #include "tchain.h"
 #include "tmessage.h"
+
+#define MESSAGE_WRITE_BUFFER	128
 
 typedef bool (*test_tFunc)(void);
 
@@ -80,8 +83,22 @@ void main()
 
 	//Setup the system
 	rcc_clock_setup_hsi(&hsi_8mhz[CLOCK_64MHZ]);	
-	serial_Init();
+	//UART on PA2 (TX) and PA3 (RX) @ 115200,8,N,1	
+	rcc_periph_clock_enable(RCC_USART2);
+	rcc_periph_clock_enable(RCC_GPIOA);
 
+	gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO2 | GPIO3);
+	gpio_set_af(GPIOA, GPIO_AF7, GPIO2| GPIO3);
+
+	usart_set_baudrate(USART2, 115200);
+	usart_set_databits(USART2, 8);
+	usart_set_stopbits(USART2, USART_STOPBITS_1);
+	usart_set_parity(USART2, USART_PARITY_NONE);
+	usart_set_mode(USART2, USART_MODE_TX);
+	usart_set_flow_control(USART2, USART_FLOWCONTROL_NONE);
+	usart_enable(USART2);
+
+	// Run the tests
 	test_Write("Running Tests...\r\n");
 
 	for(index = 0; index < TESTS; ++index)
@@ -102,6 +119,29 @@ void main()
 	while(true);		
 }
 
+/**
+ * @brief Output messages to the serial port
+ */
+void test_Write(const char *fmt, ...)
+{
+	char buffer[MESSAGE_WRITE_BUFFER];
+	const char *p = buffer;
+	int n;
+	int count;
+	va_list args;
+
+	va_start(args, fmt);
+	n = vsnprintf(buffer, MESSAGE_WRITE_BUFFER, fmt, args);
+	if((n > 0) && (n < MESSAGE_WRITE_BUFFER))
+	{
+		for(count = 0; count < n; ++count)
+		{
+			usart_send_blocking(USART2, *p++);
+		}
+	}
+	va_end(args);
+}
+
 //Functions to keep newlib happy
 void *_sbrk(int incr)
 {
@@ -110,6 +150,6 @@ void *_sbrk(int incr)
 
 void _exit(int v)
 {
-	serial_Write("\r\n_exit(%i) called. Halting\r\n", v);
+	test_Write("\r\n_exit(%i) called. Halting\r\n", v);
 	while(true);
 }

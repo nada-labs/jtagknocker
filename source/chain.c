@@ -19,7 +19,7 @@
 #include "chain.h"
 #include "jtag.h"
 #include "jtagtap.h"
-#include "serial.h"
+#include "message.h"
 
 #include <stdint.h>
 #include <libopencm3/stm32/gpio.h>
@@ -190,18 +190,18 @@ bool chain_Detect()
 		jtagTAP_SetState(JTAGTAP_STATE_DR_SHIFT);
 		jtag_Set(JTAG_SIGNAL_TDI, true);
 
-		serial_Write("[+] %i Device(s) found, with total IR Length of %i\r\n", chain_Devices, chain_IRLength);
+		message_Write(MESSAGE_LEVEL_GENERAL, "[+] %i Device(s) found, with total IR Length of %i\r\n", chain_Devices, chain_IRLength);
 
 		for(device = 0; device < chain_Devices; ++device)
 		{
 			uint32_t idcode = chain_findIDCode();
 			if(idcode != 0)
 			{
-				serial_Write("[+]  Device %i - ID Code %08X\r\n", device +1, idcode);
+				message_Write(MESSAGE_LEVEL_GENERAL, "[+]  Device %i - ID Code %08X\r\n", device +1, idcode);
 			}
 			else
 			{
-				serial_Write("[+]  Device %i - BYPASS\r\n", device +1);
+				message_Write(MESSAGE_LEVEL_GENERAL, "[+]  Device %i - BYPASS\r\n", device +1);
 			}
 		} 		
 	}

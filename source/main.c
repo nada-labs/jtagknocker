@@ -23,6 +23,7 @@
 #include "jtagtap.h"
 #include "serial.h"
 #include "knock.h"
+#include "message.h"
 
 /**
  * Development board entry point
@@ -33,6 +34,7 @@ void main()
 	//setup
 	rcc_clock_setup_hsi(&hsi_8mhz[CLOCK_64MHZ]);
 	serial_Init();
+	message_Init();
 
 	//processing
 	while(true)
@@ -52,6 +54,6 @@ void *_sbrk(int incr)
 
 void _exit(int v)
 {
-	serial_Write("\r\n_exit(%i) called. Halting\r\n", v);
+	message_Write(MESSAGE_LEVEL_REQUIRED, "\r\n_exit(%i) called. Halting\r\n", v);
 	while(true);
 }

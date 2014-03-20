@@ -18,7 +18,7 @@
 #include "jtag.h"
 #include "jtagtap.h"
 #include "knock.h"
-#include "serial.h"
+#include "message.h"
 #include "chain.h"
 #include <stdint.h>
 
@@ -180,7 +180,7 @@ static void knock_ScanResetFindTDI(unsigned int tck, unsigned int tms, uint16_t 
 
 					if(changes == 1)
 					{
-						serial_Write("[!] Potential Chain: TCK: %i TMS: %i TDO: %i TDI: %i\r\n", tck, tms, tdo, tdi);
+						message_Write(MESSAGE_LEVEL_GENERAL, "[!] Potential Chain: TCK: %i TMS: %i TDO: %i TDI: %i\r\n", tck, tms, tdo, tdi);
 						jtag_Cfg(JTAG_SIGNAL_TDO, tdo);
 						chain_Detect();
 					}
@@ -268,7 +268,7 @@ static void knock_ScanBypass(unsigned int tck, unsigned int tms)
 			{
 				if(tdo_change_clocks[tdo] >= 2)
 				{
-					serial_Write("[!] Potential Chain: TCK: %i TMS: %i TDO: %i TDI: %i\r\n", tck, tms, tdo, tdi);
+					message_Write(MESSAGE_LEVEL_GENERAL, "[!] Potential Chain: TCK: %i TMS: %i TDO: %i TDI: %i\r\n", tck, tms, tdo, tdi);
 					jtag_Cfg(JTAG_SIGNAL_TDO, tdo);
 					chain_Detect();
 					jtag_Cfg(JTAG_SIGNAL_TDO, JTAG_SIGNAL_NOT_ALLOCATED);
@@ -307,13 +307,15 @@ void knock_Scan(knock_Mode mode, unsigned int pins)
 		jtag_Cfg(sig, JTAG_SIGNAL_NOT_ALLOCATED);
 	}
 
-	serial_Write("Scanning for JTAG port...\r\n");
+	message_Write(MESSAGE_LEVEL_GENERAL, "Scanning for JTAG port...\r\n");
 	for(tck = 0; tck < knock_PinCount; ++tck)
 	{
+		message_Write(MESSAGE_LEVEL_VERBOSE, "Trying TCK: %i\r", tck);
 		for(tms = 0; tms < knock_PinCount; ++tms)
 		{
 			if(tck != tms)
 			{
+				message_Write(MESSAGE_LEVEL_DEBUG, "Trying TCK: %i TMS: %i\r", tck, tms);
 				//assign the JTAG signals for this iteration
 				jtag_Cfg(JTAG_SIGNAL_TCK, tck);
 				jtag_Cfg(JTAG_SIGNAL_TMS, tms);
@@ -333,6 +335,6 @@ void knock_Scan(knock_Mode mode, unsigned int pins)
 			}
 		}
 	}	
-	serial_Write("...Done.\r\n");
+	message_Write(MESSAGE_LEVEL_GENERAL, "...Done.\r\n");
 }
 
