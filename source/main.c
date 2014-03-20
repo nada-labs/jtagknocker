@@ -1,4 +1,4 @@
-/**
+/*
  *  JtagKnocker - JTAG finder and enumerator for STM32 dev boards
  *  Copyright (C) 2014 Nathan Dyer
  *
