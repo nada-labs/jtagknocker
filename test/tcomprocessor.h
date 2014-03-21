@@ -26,4 +26,6 @@ extern bool comproc_TestProcessToLower();
 extern bool comproc_TestProcessBSDel();
 extern bool comproc_TestProcessSmallPackets();
 extern bool comproc_TestProcessMultiCommands();
+extern bool comproc_TestProcessHugePacket();
+
 #endif

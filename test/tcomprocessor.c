@@ -199,3 +199,32 @@ bool comproc_TestProcessMultiCommands()
 
 	return true;
 }
+
+/**
+ * @brief Test that an oversized command is handled correctly
+ *
+ * An oversized command is any incoming data that has more that
+ * @ref COMPROC_BUFFER_LENGTH bytes in it before the terminator. In this case
+ * comproc_BufferLength should never exceede the total size allowed. All data
+ * in the buffer will be silently discarded when a terminator is finally seen
+ * and normal processing will resume.
+ */
+bool comproc_TestProcessHugePacket()
+{
+	unsigned int index = 0;
+	comproc_Init();
+	result_Execute = 0;
+
+	for(index = 0; index <= COMPROC_BUFFER_LENGTH; index += 10)
+	{
+		//fill the buffer up
+		comproc_Process("0123456789", 10);
+	}
+	ASSERT(comproc_BufferLength == COMPROC_BUFFER_LENGTH, "Internal buffer length wrong: %i should be %i", comproc_BufferLength, COMPROC_BUFFER_LENGTH);
+
+	comproc_Process("\n", 1);
+	ASSERT(comproc_BufferLength == 0, "Internal buffer length wrong: %i should be %i", comproc_BufferLength, 0);
+	ASSERT(result_Execute == 0, "Execute was called and it shouldn't have been");
+
+	return true;
+}

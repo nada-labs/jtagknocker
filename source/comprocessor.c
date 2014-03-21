@@ -47,49 +47,69 @@ void comproc_Init()
  * command buffer, one byte per instance. The length of the buffer should 
  * never go below zero
  *
+ * An oversized command is any incoming data that has more that
+ * @ref COMPROC_BUFFER_LENGTH bytes in it before the terminator. In this case
+ * comproc_BufferLength should never exceede the total size allowed. All data
+ * in the buffer will be silently discarded when a terminator is finally seen
+ * and normal processing will resume. 
+ *
  */
 void comproc_Process(const char * buffer, unsigned int len)
 {
 	const char *src = buffer;
 	char *dest = &comproc_Buffer[comproc_BufferLength];
 
-	while((comproc_BufferLength < COMPROC_BUFFER_LENGTH) && (len > 0))
+	while(len > 0)
 	{
-		//process backspace and delete first
-		if((*src == '\b') || (*src == 0x7F))
+		if(comproc_BufferLength < COMPROC_BUFFER_LENGTH)
 		{
-			if(comproc_BufferLength > 0)
+			//process backspace and delete first
+			if((*src == '\b') || (*src == 0x7F))
 			{
-				//go back one
-				--comproc_BufferLength;
-				--dest;
+				if(comproc_BufferLength > 0)
+				{
+					//go back one
+					--comproc_BufferLength;
+					--dest;
+				}
+			}
+			else
+			{
+				//copy the byte from the incomming buffer into the command buffer
+				//converting to lowercase if needed
+				if((*src >= 'A') && (*src <= 'Z'))
+				{
+					*dest = (*src | 0x20);		//convert to lowercase
+				}
+				else
+				{
+					*dest = *src;
+				}
+				++comproc_BufferLength;
+				++dest;
+
+				//have we reached the end of a command
+				if(*src == '\n')
+				{
+					comexec_Execute(comproc_Buffer, comproc_BufferLength);
+					//reset the index and pointer
+					comproc_BufferLength = 0;
+					dest = comproc_Buffer;
+				}
+
 			}
 		}
 		else
 		{
-			//copy the byte from the incomming buffer into the command buffer
-			//converting to lowercase if needed
-			if((*src >= 'A') && (*src <= 'Z'))
-			{
-				*dest = (*src | 0x20);		//convert to lowercase
-			}
-			else
-			{
-				*dest = *src;
-			}
-			++comproc_BufferLength;
-			++dest;
-
-			//have we reached the end of a command
+			//the buffer is full, wait for a terminator and then reset
+			//execute isn't called as the command is invalid
 			if(*src == '\n')
 			{
-				comexec_Execute(comproc_Buffer, comproc_BufferLength);
-				//reset the index and pointer
 				comproc_BufferLength = 0;
 				dest = comproc_Buffer;
 			}
-
 		}
+
 		//a byte was consumed from the input stream, update length
 		//and the pointer
 		++src;
