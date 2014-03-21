@@ -40,7 +40,9 @@ void comproc_Init()
  * The incoming buffer may provide a few bytes to a valid command, process
  * them into the command buffer, changing case and handling backspace and
  * delete as required. When a valid terminator is found, hand the command
- * buffer off for execution.
+ * buffer off for execution. Commands should process one after another, no
+ * matter where the packet boundaries lie.
+ *
  * The backspace and delete characters should remove previous input from the
  * command buffer, one byte per instance. The length of the buffer should 
  * never go below zero
@@ -76,6 +78,7 @@ void comproc_Process(const char * buffer, unsigned int len)
 				*dest = *src;
 			}
 			++comproc_BufferLength;
+			++dest;
 
 			//have we reached the end of a command
 			if(*src == '\n')
@@ -86,8 +89,6 @@ void comproc_Process(const char * buffer, unsigned int len)
 				dest = comproc_Buffer;
 			}
 
-			//increment the dest pointer
-			++dest;
 		}
 		//a byte was consumed from the input stream, update length
 		//and the pointer

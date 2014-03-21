@@ -75,6 +75,8 @@ static const test_tFunc test_Functions[] =
 	comproc_TestProcess,
 	comproc_TestProcessToLower,
 	comproc_TestProcessBSDel,
+	comproc_TestProcessSmallPackets,
+	comproc_TestProcessMultiCommands,
 };
 
 #define TESTS (sizeof(test_Functions)/sizeof(test_tFunc))	///< Number of functions in the test

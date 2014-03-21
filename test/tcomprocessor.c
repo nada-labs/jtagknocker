@@ -145,3 +145,57 @@ bool comproc_TestProcessBSDel()
 
 	return true;
 }
+
+/**
+ * @brief Test many small packets combine into a valid command
+ *
+ * Many small packets should be able to be added together to make a 
+ * valid command
+ */
+bool comproc_TestProcessSmallPackets()
+{
+	comproc_Init();
+	expected_Execute = "test one 2 three\r\n";
+	expected_ExecuteLen = 18;
+	result_Execute = 0;
+
+	comproc_Process("t", 1);
+	comproc_Process("est", 3);
+	comproc_Process(" one", 4);
+	comproc_Process(" ", 1);
+	comproc_Process("2 thr", 5);
+	comproc_Process("ee", 2);
+	comproc_Process("\r\n", 2);
+	ASSERT(result_Execute == 1, "execute failed: %i", result_Execute);
+
+	return true;
+}
+
+/**
+ * @brief Test that commands process correctly one after the other
+ *
+ * Commands should process one after another, no matter where the packet
+ * boundaries lie
+ */
+bool comproc_TestProcessMultiCommands()
+{
+	comproc_Init();
+	expected_Execute = "test one 2 three\r\n";
+	expected_ExecuteLen = 18;
+	result_Execute = 0;
+	
+	comproc_Process("test one 2 three\r\n", 18);
+	ASSERT(result_Execute == 1, "execute failed: %i", result_Execute);
+	result_Execute = 0;
+	comproc_Process("test one 2 three\r\n", 18);
+	ASSERT(result_Execute == 1, "execute failed: %i", result_Execute);
+
+	result_Execute = 0;
+	comproc_Process("test one 2 three\r\ntest one 2 three", 34);
+	ASSERT(result_Execute == 1, "execute failed: %i", result_Execute);
+	result_Execute = 0;
+	comproc_Process("\r\n", 2);
+	ASSERT(result_Execute == 1, "execute failed: %i", result_Execute);
+
+	return true;
+}
