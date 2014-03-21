@@ -24,6 +24,16 @@
 static int jtag_Signals[JTAG_SIGNAL_MAX];
 static unsigned int jtag_PinUsage;		///< Bit mask of the pins used for signals.
 
+const char * const jtag_SignalNames[JTAG_SIGNAL_MAX] = {
+	[JTAG_SIGNAL_TCK] = "TCK",
+	[JTAG_SIGNAL_TMS] = "TMS",
+	[JTAG_SIGNAL_TDI] = "TDI",
+	[JTAG_SIGNAL_TDO] = "TDO",
+	[JTAG_SIGNAL_TRST] = "TRST",
+	[JTAG_SIGNAL_SRST] = "SRST",
+	[JTAG_SIGNAL_RTCK] = "RTCK",
+};
+
 /**
  * @brief Initialises the JTAG local variables.
  */
@@ -113,6 +123,19 @@ bool jtag_Cfg(jtag_Signal sig, int num)
 		}
 	}
 	return success;
+}
+
+/**
+ * @brief Return the configuration of a signal
+ */
+int jtag_GetCfg(jtag_Signal sig)
+{
+	int retval = JTAG_SIGNAL_NOT_ALLOCATED;
+	if((sig >= JTAG_SIGNAL_TCK) && (sig < JTAG_SIGNAL_MAX))
+	{
+		retval = jtag_Signals[sig];
+	}
+	return retval;
 }
 
 /**
