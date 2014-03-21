@@ -157,6 +157,7 @@ bool jtag_TestSignalConfigSet()
 {
 	const unsigned int pin_num = 7;
 	unsigned int i;
+	bool val;
 	//Setup
 	jtag_PinUsage = 0;
 	for(i = 0; i < JTAG_SIGNAL_MAX; ++i)
@@ -165,7 +166,9 @@ bool jtag_TestSignalConfigSet()
 	}
 
 
-	jtag_Cfg(JTAG_SIGNAL_TCK, pin_num);	//configure the pin
+	val = jtag_Cfg(JTAG_SIGNAL_TCK, pin_num);	//configure the pin
+
+	ASSERT(val, "Configuration failed");
 
 	//to set an output MODER should be set to 01 for the pin.
 	ASSERT((GPIOD_MODER & (3 << (pin_num * 2)) ==  (1 << (pin_num * 2))), "Mode set incorrectly: %08X, should be %08X.", GPIOD_MODER & (3 << (pin_num * 2)), (1 << (pin_num * 2)));
@@ -188,6 +191,8 @@ bool jtag_TestSignalConfigSetInput()
 {
 	const unsigned int pin_num = 8;
 	unsigned int i;
+	bool val;
+
 	//Setup
 	jtag_PinUsage = 0;
 	for(i = 0; i < JTAG_SIGNAL_MAX; ++i)
@@ -195,7 +200,8 @@ bool jtag_TestSignalConfigSetInput()
 		jtag_Signals[i] = JTAG_SIGNAL_NOT_ALLOCATED;
 	}
 
-	jtag_Cfg(JTAG_SIGNAL_TDO, pin_num);	//configure the pin
+	val = jtag_Cfg(JTAG_SIGNAL_TDO, pin_num);	//configure the pin
+	ASSERT(val, "Configuration failed");
 
 	//to set an input MODER should be set to 00 for the pin.
 	ASSERT(((GPIOD_MODER & (3 << (pin_num * 2))) ==  0), "Mode set incorrectly: %08X, should be %08X.", GPIOD_MODER & (3 << (pin_num * 2)), 0);
@@ -220,10 +226,12 @@ bool jtag_TestSignalConfigSetInvalid()
 	const unsigned int pin_num = 22;
 	unsigned int old_PinUsage;
 	uint32_t old_MODER;
+	bool val;
 
 	jtag_Init();
 	jtag_Cfg(JTAG_SIGNAL_TMS, JTAG_SIGNAL_NOT_ALLOCATED);
-	jtag_Cfg(JTAG_SIGNAL_TMS, pin_num);	//configure the pin
+	val = jtag_Cfg(JTAG_SIGNAL_TMS, pin_num);	//configure the pin
+	ASSERT(!val, "Configuration succeeded");
 
 	//to set an input MODER should be set to 00 for the pin.
 	ASSERT((GPIOD_MODER ==  0x11), "Mode set incorrectly: %08X, should be %08X.", GPIOD_MODER, 0x11);
@@ -239,7 +247,8 @@ bool jtag_TestSignalConfigSetInvalid()
 	old_PinUsage = jtag_PinUsage;
 	old_MODER = GPIOD_MODER;
 
-	jtag_Cfg(JTAG_SIGNAL_TMS, pin_num);	//configure the pin improperly
+	val = jtag_Cfg(JTAG_SIGNAL_TMS, pin_num);	//configure the pin improperly
+	ASSERT(!val, "Configuration succeeded");
 
 	ASSERT((old_PinUsage == jtag_PinUsage), "Pin Usage changed. Was %08X, is %08X", old_PinUsage, jtag_PinUsage);
 	ASSERT((old_MODER == GPIOD_MODER), "MODER changed. Was %08X, is %08X", old_MODER, GPIOD_MODER);
@@ -259,6 +268,8 @@ bool jtag_TestSignalConfigUnSet()
 {
 	const unsigned int pin_num = 5;
 	unsigned int i;
+	bool val;
+
 	//Setup
 	jtag_PinUsage = 0;
 	for(i = 0; i < JTAG_SIGNAL_MAX; ++i)
@@ -270,8 +281,10 @@ bool jtag_TestSignalConfigUnSet()
 	jtag_Set(JTAG_SIGNAL_TCK, true);
 
 	//test
-	jtag_Cfg(JTAG_SIGNAL_TCK, JTAG_SIGNAL_NOT_ALLOCATED);
-	
+	val = jtag_Cfg(JTAG_SIGNAL_TCK, JTAG_SIGNAL_NOT_ALLOCATED);
+
+	ASSERT(val, "Configuration failed");
+
 	//check
 	//to set an input MODER should be set to 00 for the pin.
 	ASSERT(((GPIOD_MODER & (3 << (pin_num * 2))) ==  0), "Mode set incorrectly: %08X, should be %08X.", GPIOD_MODER & (3 << (pin_num * 2)), 0);
@@ -299,6 +312,7 @@ bool jtag_TestSignalConfigAlreadySetPin()
 	unsigned int old_PinUsage;
 	uint32_t old_MODER;
 	uint32_t old_BSRR;
+	bool val;
 
 	unsigned int i;
 	//Setup
@@ -316,7 +330,9 @@ bool jtag_TestSignalConfigAlreadySetPin()
 	old_PinUsage = jtag_PinUsage;
 
 	//test
-	jtag_Cfg(JTAG_SIGNAL_TMS, pin_num);
+	val = jtag_Cfg(JTAG_SIGNAL_TMS, pin_num);
+	ASSERT(!val, "Configuration succeeded");
+
 
 	//check
 	ASSERT((old_PinUsage == jtag_PinUsage), "Pin Usage changed. Was %08X, is %08X", old_PinUsage, jtag_PinUsage);
@@ -338,6 +354,7 @@ bool jtag_TestSignalConfigAlreadySetSig()
 {
 	const unsigned int pin_num = 5;
 	const unsigned int old_pin_num = 7;
+	bool val;
 
 	unsigned int i;
 	//Setup
@@ -351,7 +368,9 @@ bool jtag_TestSignalConfigAlreadySetSig()
 	jtag_Set(JTAG_SIGNAL_TCK, true);
 
 	//test
-	jtag_Cfg(JTAG_SIGNAL_TCK, pin_num);
+	val = jtag_Cfg(JTAG_SIGNAL_TCK, pin_num);
+	ASSERT(val, "Configuration failed");
+
 
 	//check old deconfiguration
 	ASSERT(((jtag_PinUsage & (1 << old_pin_num)) == 0), "Old pin wasn't un-assigned");

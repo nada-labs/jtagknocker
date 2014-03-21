@@ -63,9 +63,11 @@ void jtag_Init()
  * @param[in] sig The JTAG signal to configure.
  * @param[in] num The pin number the signal is connected to, or
  * JTAG_SIGNAL_NOT_ALLOCATED to de-configure the pin.
+ * @returns true if configuration suceeded, false if if failed.
  */
-void jtag_Cfg(jtag_Signal sig, int num)
+bool jtag_Cfg(jtag_Signal sig, int num)
 {
+	bool success = false;
 	if((sig >= JTAG_SIGNAL_TCK) && (sig < JTAG_SIGNAL_MAX))
 	{
 		unsigned int mask_and, mask_or;
@@ -91,6 +93,7 @@ void jtag_Cfg(jtag_Signal sig, int num)
 					GPIOD_MODER = (GPIOD_MODER & ~mask_and) | mask_or;
 					jtag_PinUsage |= (1<<num);
 					jtag_Signals[sig] = num;	//set the allocation
+					success = true;
 				}
 			}
 			else
@@ -103,11 +106,13 @@ void jtag_Cfg(jtag_Signal sig, int num)
 					GPIOD_MODER = (GPIOD_MODER & ~mask_and);
 					jtag_PinUsage &= ~(1<<jtag_Signals[sig]);	//mark as un-allocated
 				}
-				jtag_Signals[sig] = num;	//set the allocation
+				jtag_Signals[sig] = num;	//set the allocation	
+				success = true;
 			}
 			
 		}
 	}
+	return success;
 }
 
 /**

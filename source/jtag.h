@@ -36,7 +36,7 @@ typedef enum jtag_eSignal
 
 extern void jtag_Init();
 
-extern void jtag_Cfg(jtag_Signal sig, int num);
+extern bool jtag_Cfg(jtag_Signal sig, int num);
 extern void jtag_Set(jtag_Signal sig, bool val);
 extern bool jtag_Get(jtag_Signal sig);
 extern bool jtag_IsAllocated(jtag_Signal sig);
