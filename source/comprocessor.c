@@ -50,32 +50,45 @@ void comproc_Process(const char * buffer, unsigned int len)
 
 	while((comproc_BufferLength < COMPROC_BUFFER_LENGTH) && (len > 0))
 	{
-		//copy the byte from the incomming buffer into the command buffer
-		//converting to lowercase if needed
-		if((*src >= 'A') && (*src <= 'Z'))
+		//process backspace and delete first
+		if((*src == '\b') || (*src == 0x7F))
 		{
-			*dest = (*src | 0x20);		//convert to lowercase
+			if(comproc_BufferLength > 0)
+			{
+				//go back one
+				--comproc_BufferLength;
+				--dest;
+			}
 		}
 		else
 		{
-			*dest = *src;
-		}
-		++comproc_BufferLength;
+			//copy the byte from the incomming buffer into the command buffer
+			//converting to lowercase if needed
+			if((*src >= 'A') && (*src <= 'Z'))
+			{
+				*dest = (*src | 0x20);		//convert to lowercase
+			}
+			else
+			{
+				*dest = *src;
+			}
+			++comproc_BufferLength;
 
-		//have we reached the end of a command
-		if(*src == '\n')
-		{
-			comexec_Execute(comproc_Buffer, comproc_BufferLength);
-			//reset the index and pointer
-			comproc_BufferLength = 0;
-			dest = comproc_Buffer;
-		}
+			//have we reached the end of a command
+			if(*src == '\n')
+			{
+				comexec_Execute(comproc_Buffer, comproc_BufferLength);
+				//reset the index and pointer
+				comproc_BufferLength = 0;
+				dest = comproc_Buffer;
+			}
 
-		//increment all the pointers
-		++dest;
+			//increment the dest pointer
+			++dest;
+		}
+		//a byte was consumed from the input stream, update length
+		//and the pointer
 		++src;
-
-		//decrement the length
 		--len;
 	}
 }

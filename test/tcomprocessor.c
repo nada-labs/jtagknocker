@@ -120,3 +120,28 @@ bool comproc_TestProcessToLower()
 
 	return true;
 }
+
+/**
+ * @brief Test backspace and delete remove characters
+ *
+ * The backspace and delete characters should remove previous input from the
+ * command buffer, one byte per instance. The length of the buffer should 
+ * never go below zero
+ */
+bool comproc_TestProcessBSDel()
+{
+	//test backspace and delete
+	comproc_Init();
+	expected_Execute = "test one 2 three\r\n";
+	expected_ExecuteLen = 18;
+	result_Execute = 0;
+	
+	comproc_Process("tEstc6\b\b Op\x7FNe 2 THREE\r\n", 24);
+	ASSERT(result_Execute == 1, "execute failed: %i", result_Execute);
+
+	comproc_Init();
+	comproc_Process("test\b\b\b\b\b\b\b\b", 12);
+	ASSERT(comproc_BufferLength == 0, "Buffer length incorrect: %i, should be 0", comproc_BufferLength);
+
+	return true;
+}
