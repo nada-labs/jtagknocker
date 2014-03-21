@@ -41,6 +41,9 @@ void comproc_Init()
  * them into the command buffer, changing case and handling backspace and
  * delete as required. When a valid terminator is found, hand the command
  * buffer off for execution.
+ * The backspace and delete characters should remove previous input from the
+ * command buffer, one byte per instance. The length of the buffer should 
+ * never go below zero
  *
  */
 void comproc_Process(const char * buffer, unsigned int len)
