@@ -28,6 +28,7 @@
 #include "tjtagtap.h"
 #include "tchain.h"
 #include "tmessage.h"
+#include "tcomprocessor.h"
 
 #define MESSAGE_WRITE_BUFFER	128
 
@@ -68,6 +69,10 @@ static const test_tFunc test_Functions[] =
 	message_TestInitialization,
 	message_TestSetLevel,
 	message_TestMessages,
+
+	//Command processor tests
+	comproc_TestInitialization,
+	comproc_TestProcess,
 };
 
 #define TESTS (sizeof(test_Functions)/sizeof(test_tFunc))	///< Number of functions in the test
