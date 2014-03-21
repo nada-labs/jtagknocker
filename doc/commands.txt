@@ -9,6 +9,9 @@ reply will be given, to indicate the status of that command. Additional
 information may be provided by a command to indicate results or more error 
 information, but this will be at a message level of GENERAL (1) or greater.
 
+Delete and Backspace are supported, which removes the last character received.
+Characters received are converted to lowercase.
+
 @subsection protoex Protocol Example
 
     > help
