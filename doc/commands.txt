@@ -91,7 +91,7 @@ error response was returned, followed by another prompt.
 	a TAP state walk will be used.
 
   message level
-	Sets the message level. 
+	Sets or displays the message level. 
 	3 for all messages, 0 for required messages only, default level is 1.
 
   shift

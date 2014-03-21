@@ -18,7 +18,22 @@
 
 #if !defined(_COMEXECUTE_H_)
 #define _COMEXECUTE_H_
+#include "knock.h"
+#include "jtag.h"
+#include "jtagtap.h"
+#include "message.h"
 
-extern void comexec_Execute(char * buffer, unsigned int len);
+extern void comexec_Execute(char *Buffer, unsigned int Length);
+
+//Command handlers
+extern void comexec_MessageLevel(message_Levels Level);
+extern void comexec_Chain();
+extern void comexec_ScanForJTAG(unsigned int Pins, knock_Mode Mode);
+extern void comexec_SignalConfig(jtag_Signal Signal, int Pin);
+extern void comexec_Config();
+extern void comexec_TAP(jtagTAP_TAPState State);
+extern void comexec_Clock(unsigned int Counts);
+extern void comexec_SetSignal(jtag_Signal Signal, bool State);
+extern void comexec_GetSignal(jtag_Signal Signal);
 
 #endif
