@@ -22,4 +22,6 @@
 
 extern bool comproc_TestInitialization();
 extern bool comproc_TestProcess();
+extern bool comproc_TestProcessToLower();
+
 #endif

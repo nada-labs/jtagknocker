@@ -105,4 +105,18 @@ bool comproc_TestProcess()
 
 /**
  * @brief Test the command processor converts bytes to lower case
+ *
+ * The command processor should convert uppercase characters to lowercase
  */
+bool comproc_TestProcessToLower()
+{
+	comproc_Init();
+	expected_Execute = "test one 2 three\r\n";
+	expected_ExecuteLen = 18;
+	result_Execute = 0;
+	
+	comproc_Process("tEst ONe 2 THREE\r\n", 18);
+	ASSERT(result_Execute == 1, "execute failed: %i", result_Execute);
+
+	return true;
+}

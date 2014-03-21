@@ -51,7 +51,15 @@ void comproc_Process(const char * buffer, unsigned int len)
 	while((comproc_BufferLength < COMPROC_BUFFER_LENGTH) && (len > 0))
 	{
 		//copy the byte from the incomming buffer into the command buffer
-		*dest = *src;
+		//converting to lowercase if needed
+		if((*src >= 'A') && (*src <= 'Z'))
+		{
+			*dest = (*src | 0x20);		//convert to lowercase
+		}
+		else
+		{
+			*dest = *src;
+		}
 		++comproc_BufferLength;
 
 		//have we reached the end of a command
