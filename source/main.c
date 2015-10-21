@@ -24,6 +24,7 @@
 #include "serial.h"
 #include "knock.h"
 #include "message.h"
+#include "comprocessor.h"
 
 /**
  * Development board entry point
@@ -35,6 +36,7 @@ void main()
 	rcc_clock_setup_hsi(&hsi_8mhz[CLOCK_64MHZ]);
 	serial_Init();
 	message_Init();
+	comproc_Init();
 
 	//processing
 	while(true)

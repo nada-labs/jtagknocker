@@ -44,14 +44,14 @@ void comproc_Init()
  * matter where the packet boundaries lie.
  *
  * The backspace and delete characters should remove previous input from the
- * command buffer, one byte per instance. The length of the buffer should 
+ * command buffer, one byte per instance. The length of the buffer should
  * never go below zero
  *
  * An oversized command is any incoming data that has more that
  * @ref COMPROC_BUFFER_LENGTH bytes in it before the terminator. In this case
  * comproc_BufferLength should never exceede the total size allowed. All data
  * in the buffer will be silently discarded when a terminator is finally seen
- * and normal processing will resume. 
+ * and normal processing will resume.
  *
  */
 void comproc_Process(const char * buffer, unsigned int len)
@@ -91,7 +91,10 @@ void comproc_Process(const char * buffer, unsigned int len)
 				//have we reached the end of a command
 				if(*src == '\n')
 				{
-					comexec_Execute(comproc_Buffer, comproc_BufferLength);
+					//NULL terminate the buffer
+					comproc_Buffer[comproc_BufferLength] = '\x00';
+
+					comexec_Execute(comproc_Buffer);
 					//reset the index and pointer
 					comproc_BufferLength = 0;
 					dest = comproc_Buffer;

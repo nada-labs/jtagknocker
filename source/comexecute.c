@@ -19,8 +19,24 @@
 #include "message.h"
 #include "chain.h"
 #include "knock.h"
+#include "jtag.h"
+#include "jtagtap.h"
+#include <string.h>
+#include <errno.h>
 
 static void comexec_SendReply(bool Success);
+
+//Command handlers
+static void comexec_MessageLevel(message_Levels Level);
+static void comexec_Chain();
+static void comexec_ScanForJTAG(unsigned int Pins, knock_Mode Mode);
+static void comexec_SignalConfig(jtag_Signal Signal, int Pin);
+static void comexec_Config();
+static void comexec_TAP(jtagTAP_TAPState State);
+static void comexec_Clock(unsigned int Counts);
+static void comexec_SetSignal(jtag_Signal Signal, bool State);
+static void comexec_GetSignal(jtag_Signal Signal);
+static void comexec_Help();
 
 /**
  * @brief Sets the current message level
@@ -47,7 +63,7 @@ void comexec_MessageLevel(message_Levels Level)
 		}
 		else
 		{
-			message_Write(MESSAGE_LEVEL_GENERAL, "Level must be between %i and %i inclusive\r\n", MESSAGE_LEVEL_REQUIRED, MESSAGE_LEVEL_MAX - 1);
+			message_Write(MESSAGE_LEVEL_GENERAL, "Level must be between %i and %i inclusive.\r\n", MESSAGE_LEVEL_REQUIRED, MESSAGE_LEVEL_MAX - 1);
 		}
 	}
 	comexec_SendReply(success);
@@ -65,7 +81,7 @@ void comexec_Chain()
 	bool success = chain_Detect();
 	if(!success)
 	{
-		message_Write(MESSAGE_LEVEL_VERBOSE, "No devices found on chain. Are the signal assignments correct?\r\n");	
+		message_Write(MESSAGE_LEVEL_VERBOSE, "No devices found on chain. Are the signal assignments correct?\r\n");
 	}
 	comexec_SendReply(success);
 }
@@ -76,9 +92,9 @@ void comexec_Chain()
  * Scans for a JTAG interface on pins 1 - npins
  *
  * reset mode uses a TAP Reset to look for idcodes, this mode will fail if no
- * devices on the chain support IDCODE. Takes (npins*(npins-1)+(npins-2) 
+ * devices on the chain support IDCODE. Takes (npins*(npins-1)+(npins-2)
  * operations.
- *			
+ *
  * bypass mode scans BYPASS commands into the TAPs and looks for TDO. Takes
  * (npins*(npins-1)*(npins-2) operations.
  *
@@ -90,14 +106,14 @@ void comexec_Chain()
 void comexec_ScanForJTAG(unsigned int Pins, knock_Mode Mode)
 {
 	bool success = false;
-	if(Pins >=4 )
+	if((Pins >=4 ) && (Pins <= JTAG_PIN_MAX))
 	{
 		knock_Scan(Mode, Pins);
 		success = true;	//the command itself doesn't fail, even if the scan doesn't find anything.
 	}
 	else
 	{
-		message_Write(MESSAGE_LEVEL_GENERAL, "At least 4 pins are required for a scan\r\n");
+		message_Write(MESSAGE_LEVEL_GENERAL, "At least 4 pins are required for a scan. Max 16.\r\n");
 	}
 	comexec_SendReply(success);
 }
@@ -129,7 +145,7 @@ void comexec_SignalConfig(jtag_Signal Signal, int Pin)
 				Pin -= 1;	//turn into 0 based pins
 			}
 			success = jtag_Cfg(Signal, Pin);
-		
+
 			if(!success)
 			{
 				message_Write(MESSAGE_LEVEL_GENERAL, "Configuration failed: Pin in use.\r\n");
@@ -145,7 +161,7 @@ void comexec_SignalConfig(jtag_Signal Signal, int Pin)
 	{
 		message_Write(MESSAGE_LEVEL_GENERAL, "Invalid signal\r\n");
 	}
-	comexec_SendReply(success);	
+	comexec_SendReply(success);
 }
 
 /**
@@ -202,7 +218,7 @@ void comexec_TAP(jtagTAP_TAPState State)
 /**
  * @brief Toggle the clock signal.
  *
- * Assumes that the clock signal has been assigned to a pin. 
+ * Assumes that the clock signal has been assigned to a pin.
  * Does nothing otherwise.
  *
  * @param[in] Counts The number of clock pulses to provide
@@ -219,7 +235,7 @@ void comexec_Clock(unsigned int Counts)
 /**
  * @brief Set a signal
  *
- * Trying to set an input has no effect. 
+ * Trying to set an input has no effect.
  *
  * @param[in] Signal The signal to set.
  * @param[in] State The state to set to.
@@ -257,8 +273,142 @@ void comexec_SendReply(bool Success)
 	}
 	else
 	{
-		message_Write(MESSAGE_LEVEL_REQUIRED, "ERR\r\n");
+		message_Write(MESSAGE_LEVEL_REQUIRED, "ERROR\r\n");
 	}
 	//issue a new prompt
 	message_Write(MESSAGE_LEVEL_REQUIRED, "> ");
+}
+
+/**
+ * @brief Display the list of available commands
+ *
+ */
+void comexec_Help()
+{
+
+}
+
+/**
+ * @brief Execute the given command
+ *
+ * Parses the supplied command and converts any arguments into the data types
+ * expected by the various handler functions.
+ *
+ * @param[in] Buffer The command to execute in string format
+ */
+void comexec_Execute(char *Buffer)
+{
+	char *pSaveToken;
+	char *Token;
+	bool parseSuccess = false;
+
+	Token = strtok_r(Buffer, " ", &pSaveToken);
+
+	if(strcmp(Token, "help") == 0)
+	{
+		comexec_Help();
+	}
+	else if(strcmp(Token, "chain") == 0)
+	{
+		comexec_Chain();
+	}
+	else if(strcmp(Token, "clock") == 0)
+	{
+		unsigned int count;
+
+		//check and convert the required counts value
+		if((Token = strtok_r(NULL, " ", &pSaveToken)) != NULL)
+		{
+			errno = 0;
+			count = strtoul(Token, NULL, 10);
+			if(errno == 0)
+			{
+				//execute the clock command
+				comexec_Clock(count);
+			}
+			else
+			{
+				message_Write(MESSAGE_LEVEL_GENERAL, "n needs to be a number.\r\n");
+				comexec_SendReply(false);
+			}
+		}
+		else
+		{
+			message_Write(MESSAGE_LEVEL_GENERAL, "missing parameter count.\r\n");
+			comexec_SendReply(false);
+		}
+	}
+	else if(strcmp(Token, "message") == 0)
+	{
+		message_Levels level = MESSAGE_LEVEL_MAX;
+		parseSuccess = true;
+		//check and convert the required counts value
+		if((Token = strtok_r(NULL, " ", &pSaveToken)) != NULL)
+		{
+			errno = 0;
+			level = strtoul(Token, NULL, 10);
+			if(errno != 0)
+			{
+				parseSuccess = false;
+				message_Write(MESSAGE_LEVEL_GENERAL, "level needs to be a number.\r\n");
+				comexec_SendReply(false);
+			}
+		}
+		if(parseSuccess)
+		{
+			comexec_MessageLevel(level);
+		}
+	}
+	else if(strcmp(Token, "scan") == 0)
+	{
+		knock_Mode scanMode = KNOCK_MODE_RESET;
+		unsigned int pins;
+
+		//check and convert the required npins value
+		if((Token = strtok_r(NULL, " ", &pSaveToken)) != NULL)
+		{
+			errno = 0;
+			pins = strtoul(Token, NULL, 10);
+			if(errno == 0)
+			{
+				parseSuccess = true;
+				if((Token = strtok_r(NULL, " ", &pSaveToken)) != NULL)
+				{
+					//handle the mode if supplied
+					if(strcmp(Token, "reset") == 0)
+					{
+						scanMode = KNOCK_MODE_RESET;
+					}
+					else if(strcmp(Token, "bypass") == 0)
+					{
+						scanMode = KNOCK_MODE_BYPASS;
+					}
+					else
+					{
+						message_Write(MESSAGE_LEVEL_GENERAL, "invalid mode.\r\n");
+						comexec_SendReply(false);
+						parseSuccess = false;
+					}
+				}
+
+				if(parseSuccess)
+				{
+					//execute the scan command
+					comexec_ScanForJTAG(pins, scanMode);
+				}
+			}
+			else
+			{
+				message_Write(MESSAGE_LEVEL_GENERAL, "npins needs to be a number.\r\n");
+				comexec_SendReply(false);
+				parseSuccess = false;
+			}
+
+		}
+		else
+		{
+			message_Write(MESSAGE_LEVEL_GENERAL, "missing parameter npins.\r\n");
+			comexec_SendReply(false);
+		}
+	}
 }
