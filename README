@@ -7,17 +7,22 @@
  boards. It also functions as a USB JTAG adapter, which will be compatible
  with OpenOCD and have more features and be faster than a usb-blaster.
 
- Why? Because I don't have an arduino and I don't want to buy dedicated 
+ Why? Because I don't have an arduino and I don't want to buy dedicated
  hardware. It's also a great learning experience on the inner workings
  of JTAG.
- 
+
  The documentation is currently brief, but is an ongoing work in progress.
  Check out the code, run a `make docs` and look at `./doc/html/index.html`
  for way more detail.
 
 @section qstart Quick Start
 
- To get up and running, a `make` will build a binary in the `source` 
+ If you've just cloned the repo run:
+  git submodule init
+  git submodule update
+  cd libopencm3 && make
+
+ To get up and running, a `make` will build a binary in the `source`
  directory that can be uploaded to the Discovery board. You will need the
  arm-none-eabi gcc toolchain installed and a way to program the Discovery
  board. For more information see @subpage building.

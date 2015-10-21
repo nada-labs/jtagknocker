@@ -3,6 +3,7 @@
 *.o
 *~
 html
+build
+doc/doxygen_sqlite3.db
+*.ld
 
-Debug
-Release

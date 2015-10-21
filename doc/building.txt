@@ -5,23 +5,30 @@
 
 JTAG Knocker requires very few items in order to build. These are:
 - A functioning arm compiler.
-  By default arm-none-eabi-gcc is assumed (available as a Ubuntu package from: https://launchpad.net/~terry.guo/+archive/gcc-arm-embedded
+  By default arm-none-eabi-gcc is assumed (available as a Ubuntu package from:
+  https://launchpad.net/~terry.guo/+archive/gcc-arm-embedded
 
 - A STM32 Discovery development board.
-  Currently only the STM32F3 board has been tested, it should work on others as long as the correct processor is set.
+  Currently only the STM32F3 board has been tested, it should work on others as
+  long as the correct processor is set.
 
-- stlink or a way to program the development board. Available from https://github.com/texane/stlink
+- stlink or a way to program the development board. Available from
+  https://github.com/texane/stlink
 
+- GNU awk. libopencm3 requires this. Some ubuntu flavours ship with mawk, which
+  doesn't work, giving an error of *** unknown device stm32f303vct6 for the
+  linker. Cannot generate ldscript.  Stop.
 
 ## Building ##
 
-A `make all` should in most cases suffice, generating a elf file in the source directory.
+A `make all` should in most cases suffice, generating a elf file under the
+build directory.
 
 For more advanced usage, the following make targets are available:
 
 - `jtagknocker`
 
-   Build the source and generates a elf file for loading into the STM32F3 
+   Build the source and generates a elf file for loading into the STM32F3
    discovery board. This is the default target.
 
 - `test`
@@ -40,9 +47,9 @@ For more advanced usage, the following make targets are available:
 The Makefile takes several variables when compiling to aid support for other
 targets. These are:
 
-- `PREFIX`
+- `CROSS_COMPILE`
 
-   Sets the cross compiler prefix. If not specified it defaults to `arm-none-eabi`
+   Sets the cross compiler prefix. If not specified it defaults to `arm-none-eabi-`
 
 - `DEVICE`
 
