@@ -22,7 +22,7 @@
 
 void serial_Init()
 {
-	//UART on PA2 (TX) and PA3 (RX) @ 115200,8,N,1	
+	//UART on PA2 (TX) and PA3 (RX) @ 115200,8,N,1
 	rcc_periph_clock_enable(RCC_USART2);
 	rcc_periph_clock_enable(RCC_GPIOA);
 

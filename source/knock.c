@@ -56,7 +56,7 @@ static void knock_ScanReset(unsigned int tck, unsigned int tms)
 
 	jtagTAP_SetState(JTAGTAP_STATE_UNKNOWN);
 	jtagTAP_SetState(JTAGTAP_STATE_DR_SHIFT);
-	
+
 	prev_data = GPIOD_IDR;
 	for(count = 0; count < KNOCK_RESULTS; ++count)
 	{
@@ -158,12 +158,12 @@ static void knock_ScanResetFindTDI(unsigned int tck, unsigned int tms, uint16_t 
 
 					jtag_Cfg(JTAG_SIGNAL_TDI, tdi);
 					jtag_Set(JTAG_SIGNAL_TDI, ((tdi_state >> tdi) & 1) == 0);	//toggle the TDI pin
-					
+
 					for(clocks = 0; clocks < nresults; ++clocks)
 					{
 						unsigned int tdo_val = (GPIOD_IDR & (1 << tdo));
 						jtag_Clock();
-							
+
 						if((tdo_val ^ prev_tdo_val) != 0)
 						{
 							++changes;
@@ -175,7 +175,7 @@ static void knock_ScanResetFindTDI(unsigned int tck, unsigned int tms, uint16_t 
 					jtag_Set(JTAG_SIGNAL_TDI, ((tdi_state >> tdi) & 1) == 1);	//toggle the TDI pin
 					for(clocks = 0; clocks < nresults; ++clocks)
 					{
-						jtag_Clock();	
+						jtag_Clock();
 					}
 
 					if(changes == 1)
@@ -226,9 +226,9 @@ static void knock_ScanBypass(unsigned int tck, unsigned int tms)
 			{
 				jtag_Clock();
 			}
-			tdo_candidates = GPIOD_IDR;	//any pin which is set here and changes to 
+			tdo_candidates = GPIOD_IDR;	//any pin which is set here and changes to
 							//0 once and stays there is probably TDO
-	
+
 			jtag_Set(JTAG_SIGNAL_TDI, false);
 			for(count = 0; count < 16; ++count)
 			{
@@ -260,9 +260,9 @@ static void knock_ScanBypass(unsigned int tck, unsigned int tms)
 							//it had gone low, but went high. damn.
 							tdo_change_clocks[tdo] = -1;
 						}
-					} 
+					}
 				}
-			} 
+			}
 
 			for(tdo = 0; tdo < knock_PinCount; ++tdo)
 			{
@@ -334,7 +334,7 @@ void knock_Scan(knock_Mode mode, unsigned int pins)
 				jtag_Cfg(JTAG_SIGNAL_TMS, JTAG_SIGNAL_NOT_ALLOCATED);
 			}
 		}
-	}	
+	}
 	message_Write(MESSAGE_LEVEL_GENERAL, "...Done.\r\n");
 }
 

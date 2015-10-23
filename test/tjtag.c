@@ -66,7 +66,7 @@ bool jtag_TestInitSignalAlloc()
 	{
 		ASSERT((jtag_Signals[index] == JTAG_SIGNAL_NOT_ALLOCATED), "JTAG signal state not initialized correctly. Signal: %i", index);
 	}
-	
+
 	//first four pins are allocated
 	ASSERT((jtag_PinUsage == 0x0F), "Pin allocation wasn't initialized correctly.");
 
@@ -93,7 +93,7 @@ bool jtag_TestInitRegisterSetup()
 	GPIOD_ODR = 0xABCD1234;
 	GPIOD_BSRR = 0xABCD1234;
 	RCC_AHBENR = 0x00000000;
-	
+
 	jtag_Init();	//call the function under test
 
 	//MODER is 2 bits per pin, with the following values
@@ -117,7 +117,7 @@ bool jtag_TestInitRegisterSetup()
 	//	11 50MHz High Speed
 	//OSPEEDR should be either 0x00000000 or 0xCCCCCCCC to set low speed mode.
 	ASSERT(((GPIOD_OSPEEDR & 0x55555555) == 0x00000000), "GPIO Output speed set incorrectly: %08X, should be 00000000 or CCCCCCCC.", GPIOD_OTYPER);
-	
+
 	//PUPDR is 2 bits per pin, with the following values
 	//	00 No pull up or down
 	//	01 Pull Up
@@ -126,9 +126,9 @@ bool jtag_TestInitRegisterSetup()
 	//PUPDR should be 0x00000000 to disable pullups
 	ASSERT((GPIOD_PUPDR == 0x00000000), "GPIO pull up/down set incorrectly: %08X, should be %08X.", GPIOD_PUPDR, 0);
 
-	//BSRR bits 0 - 15 set the relevant pin if written as 1, 
+	//BSRR bits 0 - 15 set the relevant pin if written as 1,
 	//bits 16 - 31 reset the relevant pin if written as 1.
-	//ODR bits 0 - 15 define the state of the relevant pin and the others 
+	//ODR bits 0 - 15 define the state of the relevant pin and the others
 	//must be kept at reset value (0).
 	//Either BSRR has to be set to 0xFFFF0000 or ODR set to 0x00000000 to
 	//get the pins to default to low output
@@ -145,7 +145,7 @@ bool jtag_TestInitRegisterSetup()
 	return true;
 }
 
-/** 
+/**
  * @brief Test that a signal is configured correctly
  *
  * The pin is set correctly if it's:
@@ -218,7 +218,7 @@ bool jtag_TestSignalConfigSetInput()
 /**
  * @brief Test that an invalid pin is handled correctly
  *
- * Nothing should change when the provided pin for a signal is outside of the 
+ * Nothing should change when the provided pin for a signal is outside of the
  * allowed range. Which currently is pins 0 - 15.
  */
 bool jtag_TestSignalConfigSetInvalid()
@@ -260,7 +260,7 @@ bool jtag_TestSignalConfigSetInvalid()
 /**
  * @brief Test that a signal is deconfigured correctly
  *
- * The pin should return to being an input, the signal set back to 
+ * The pin should return to being an input, the signal set back to
  * JTAG_PIN_NOT_ALLOCATED and the pin marked as being free.
  * The output state of the pin should also reset to low.
  */
@@ -304,7 +304,7 @@ bool jtag_TestSignalConfigUnSet()
  * @brief Test that no changes happen if a pin is already in use
  *
  * Nothing should happen if a signal is set to a pin that is alreay
- * being used. 
+ * being used.
  */
 bool jtag_TestSignalConfigAlreadySetPin()
 {
@@ -346,7 +346,7 @@ bool jtag_TestSignalConfigAlreadySetPin()
 /**
  * @brief Test that a signal is reconfigured correctly.
  *
- * The old pin the signal was on should be deallocated correctly and 
+ * The old pin the signal was on should be deallocated correctly and
  * the new one configured properly.
  * See the jtag_TestSignalConfigSet and jtag_TestSignalConfigUnSet tests.
  */
@@ -376,7 +376,7 @@ bool jtag_TestSignalConfigAlreadySetSig()
 	ASSERT(((jtag_PinUsage & (1 << old_pin_num)) == 0), "Old pin wasn't un-assigned");
 	ASSERT(((GPIOD_MODER & (3 << (old_pin_num * 2))) ==  0), "Mode set incorrectly: %08X, should be %08X.", GPIOD_MODER & (3 << (old_pin_num * 2)), 0);
 	ASSERT((GPIOD_BSRR == (1 << old_pin_num)), "Pin wasn't reset to low");
-	
+
 	//check new configuration
 	ASSERT(((jtag_PinUsage & (1 << pin_num)) != 0), "New pin wasn't assigned");
 	ASSERT(((GPIOD_MODER & (3 << (pin_num * 2))) ==  (1 << (pin_num * 2))), "Mode set incorrectly: %08X, should be %08X.", GPIOD_MODER & (3 << (old_pin_num * 2)), (1 << (pin_num * 2)));
@@ -400,9 +400,9 @@ bool jtag_TestSetAndClear()
 	jtag_Cfg(JTAG_SIGNAL_TRST, pin_num);
 
 	GPIOD_BSRR = 0;	// clear the register (should be zero from jtag_Init anyway)
-	
+
 	jtag_Set(JTAG_SIGNAL_TRST, true);
-	
+
 	//bit 3 in BSSR should be set, to set the pin output high.
 	//all other bits should be 0 as other pins shouldn't be modified.
 	ASSERT((GPIOD_BSRR == (1<<pin_num)), "Pin wasn't set correctly. BSRR: %08X should be %08x", GPIOD_BSRR, 1<<pin_num);
@@ -411,7 +411,7 @@ bool jtag_TestSetAndClear()
 	//bit 19 (3 + 16) in BSSR should be set, to set the pin output low.
 	//all other bits should be 0 as other pins shouldn't be modified.
 	ASSERT((GPIOD_BSRR == (1<<(pin_num+16))), "Pin wasn't set correctly. BSRR: %08X should be %08x", GPIOD_BSRR, 1<<(pin_num+16));
-	
+
 	return true;
 }
 
@@ -425,7 +425,7 @@ bool jtag_TestSetUnallocatedSignal()
 	//setup
 	jtag_Init();
 	GPIOD_BSRR = 0;	// clear the register (should be zero from jtag_Init anyway)
-	
+
 	jtag_Set(JTAG_SIGNAL_TRST, true);
 	//no bits in BSRR shoul be set.
 	ASSERT((GPIOD_BSRR == 0), "BSRR modified: %08X should be %08x", GPIOD_BSRR, 0);
@@ -433,7 +433,7 @@ bool jtag_TestSetUnallocatedSignal()
 	jtag_Set(JTAG_SIGNAL_TRST, false);
 	//no bits in BSRR shoul be set.
 	ASSERT((GPIOD_BSRR == 0), "BSRR modified: %08X should be %08x", GPIOD_BSRR, 0);
-	
+
 	return true;
 }
 
@@ -448,7 +448,7 @@ bool jtag_TestSetInput()
 	jtag_Init();
 
 	GPIOD_BSRR = 0;	// clear the register (should be zero from jtag_Init anyway)
-	
+
 	jtag_Set(JTAG_SIGNAL_TDO, true);
 	//no bits in BSRR shoul be set.
 	ASSERT((GPIOD_BSRR == 0), "BSRR modified: %08X should be %08x", GPIOD_BSRR, 0);
@@ -456,7 +456,7 @@ bool jtag_TestSetInput()
 	jtag_Set(JTAG_SIGNAL_TDO, false);
 	//no bits in BSRR shoul be set.
 	ASSERT((GPIOD_BSRR == 0), "BSRR modified: %08X should be %08x", GPIOD_BSRR, 0);
-	
+
 	return true;
 }
 
@@ -478,14 +478,14 @@ bool jtag_TestGet()
 	ASSERT(val, "Signal not active.");
 
 	GPIOD_IDR = (1<<1);
-	
+
 	val = jtag_Get(JTAG_SIGNAL_TDO);
 	ASSERT(!val, "Signal active.");
 	val = jtag_Get(JTAG_SIGNAL_TMS);
 	ASSERT(val, "Signal not active.");
 
 	GPIOD_IDR = 0;
-	
+
 	val = jtag_Get(JTAG_SIGNAL_TDO);
 	ASSERT(!val, "Signal active.");
 	val = jtag_Get(JTAG_SIGNAL_TMS);
@@ -503,13 +503,13 @@ bool jtag_TestGetUnallocated()
 {
 	bool val;
 	jtag_Init();
-	
+
 	GPIOD_IDR = 0xFFFFFFFF;
 
 	val = jtag_Get(JTAG_SIGNAL_TRST);
 	//no bits in BSRR shoul be set.
 	ASSERT(!val, "Unallocated signal active.");
-	
+
 	return true;
 }
 
@@ -522,13 +522,13 @@ bool jtag_TestIsAllocated()
 {
 	bool val;
 	jtag_Init();
-	
+
 	val = jtag_IsAllocated(JTAG_SIGNAL_TRST);
 	ASSERT(!val, "Signal apparaently allocated");
-	
+
 	jtag_Cfg(JTAG_SIGNAL_TRST, 4);
 	val = jtag_IsAllocated(JTAG_SIGNAL_TRST);
 	ASSERT(val, "Signal apparaently not allocated");
 
 	return true;
-}  
+}

@@ -45,7 +45,7 @@ void main()
 	}
 
 	//whoops, we dropped out of the main loop
-	while(true); 
+	while(true);
 }
 
 //functions to keep newlib happy

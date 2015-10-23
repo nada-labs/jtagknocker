@@ -116,10 +116,10 @@ bool jtag_Cfg(jtag_Signal sig, int num)
 					GPIOD_MODER = (GPIOD_MODER & ~mask_and);
 					jtag_PinUsage &= ~(1<<jtag_Signals[sig]);	//mark as un-allocated
 				}
-				jtag_Signals[sig] = num;	//set the allocation	
+				jtag_Signals[sig] = num;	//set the allocation
 				success = true;
 			}
-			
+
 		}
 	}
 	return success;
@@ -195,7 +195,7 @@ void jtag_Clock()
 {
 	unsigned int cnt;
 	jtag_Set(JTAG_SIGNAL_TCK, true);
-	
+
 	for(cnt = 8000; cnt > 0; --cnt)
 	{
 		__asm("nop");
@@ -224,6 +224,6 @@ bool jtag_IsAllocated(jtag_Signal sig)
 	{
 		retval = (jtag_Signals[sig] != JTAG_SIGNAL_NOT_ALLOCATED);
 	}
-	return retval;	
+	return retval;
 }
 

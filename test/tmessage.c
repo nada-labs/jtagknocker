@@ -34,7 +34,7 @@ bool message_TestInitialization()
 
 	message_Init();
 
-	ASSERT(message_Level == MESSAGE_LEVEL_GENERAL, "Message level incorrect: %i should be %i", message_Level, MESSAGE_LEVEL_GENERAL);	
+	ASSERT(message_Level == MESSAGE_LEVEL_GENERAL, "Message level incorrect: %i should be %i", message_Level, MESSAGE_LEVEL_GENERAL);
 
 	return true;
 }
@@ -42,7 +42,7 @@ bool message_TestInitialization()
 /**
  * @brief Test level setting
  *
- * The level can be set to any of the predefined values (REQUIRED -> DEBUG). 
+ * The level can be set to any of the predefined values (REQUIRED -> DEBUG).
  * A call to set with an invalid vaule will result in no change of the current
  * level.
  */
@@ -68,7 +68,7 @@ bool message_TestSetLevel()
 /**
  * @brief Test messages are displayed at the correct level
  *
- * A message must only be displayed if the provided message level is less 
+ * A message must only be displayed if the provided message level is less
  * than or equal to the current message level. Otherwise it is ignored.
  */
 bool message_TestMessages()
@@ -89,7 +89,7 @@ bool message_TestMessages()
 
 /**
  * @brief Mock serial_Send
- * 
+ *
  * Records the number of times it was called
  */
 void message_Mock_serial_Send(const char *buffer, unsigned int len)

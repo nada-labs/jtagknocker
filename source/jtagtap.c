@@ -29,7 +29,7 @@ const char * const jtagTAP_StateNames[JTAGTAP_STATE_MAX] = {
 	[JTAGTAP_STATE_DR_SHIFT] = "Shift DR",
 	[JTAGTAP_STATE_DR_EXIT1] = "Exit 1 DR",
 	[JTAGTAP_STATE_DR_PAUSE] = "Pause DR",
-	[JTAGTAP_STATE_DR_EXIT2] = "Exit 2 DR", 
+	[JTAGTAP_STATE_DR_EXIT2] = "Exit 2 DR",
 	[JTAGTAP_STATE_DR_UPDATE] = "Update DR",
 	[JTAGTAP_STATE_IR_SCAN] = "Scan IR",
 	[JTAGTAP_STATE_IR_CAPTURE] = "Capture IR",
@@ -97,7 +97,7 @@ void jtagTAP_SetState(jtagTAP_TAPState target)
 						{
 							__asm("nop");
 						}
-						jtag_Set(JTAG_SIGNAL_TRST, true);	//Assumes an active low signal	
+						jtag_Set(JTAG_SIGNAL_TRST, true);	//Assumes an active low signal
 					}
 					else
 					{

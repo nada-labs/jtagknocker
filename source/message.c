@@ -64,7 +64,7 @@ message_Levels message_GetLevel()
  *
  * @param level The message level
  * @param fmt A format string for the level
- * @return The number of bytes written or -1 if an error occured, 
+ * @return The number of bytes written or -1 if an error occured,
  * -2 for incorrect level
  */
 int message_Write(message_Levels level, const char *fmt, ...)

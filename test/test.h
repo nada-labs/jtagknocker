@@ -23,7 +23,7 @@ extern void test_Write(const char *fmt, ...);
 /**
  * @brief Test an operation and report message
  *
- * If the boolean test is false the provided message and arguments will be 
+ * If the boolean test is false the provided message and arguments will be
  * sent to the serial port.
  *
  * @note Assumes all tests return boolean

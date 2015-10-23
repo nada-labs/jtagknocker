@@ -34,7 +34,7 @@
 
 typedef bool (*test_tFunc)(void);
 
-static const test_tFunc test_Functions[] = 
+static const test_tFunc test_Functions[] =
 {
 	//Add test functions here
 
@@ -92,8 +92,8 @@ void main()
 	unsigned int index;
 
 	//Setup the system
-	rcc_clock_setup_hsi(&hsi_8mhz[CLOCK_64MHZ]);	
-	//UART on PA2 (TX) and PA3 (RX) @ 115200,8,N,1	
+	rcc_clock_setup_hsi(&hsi_8mhz[CLOCK_64MHZ]);
+	//UART on PA2 (TX) and PA3 (RX) @ 115200,8,N,1
 	rcc_periph_clock_enable(RCC_USART2);
 	rcc_periph_clock_enable(RCC_GPIOA);
 
@@ -126,7 +126,7 @@ void main()
 
 	test_Write("Done.\r\n%i tests run, %i passed, %i failed.\r\n", TESTS, tests_passed, tests_failed);
 
-	while(true);		
+	while(true);
 }
 
 /**

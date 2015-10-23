@@ -60,15 +60,15 @@ bool chain_TestFakeChain()
 	char expect_ir[] = { 0x01, 0xFC };	//expected ir value after the shift
 	char dr_sample[5];				//storage for DR output
 	unsigned int count;
-	
+
 	//set up the fake chain
 	chain_ir_len = 10;
-	chain_ir = ir;	
+	chain_ir = ir;
 	chain_dr_len = 32;
 	chain_dr = dr;
 	chain_reset = false;
 	usage_error = 0;
-	
+
 	chain_Mock_jtagTAP_SetState(JTAGTAP_STATE_RESET);
 	ASSERT(chain_reset, "Chain didn't reset");
 
@@ -78,7 +78,7 @@ bool chain_TestFakeChain()
 	chain_Mock_jtag_Set(JTAG_SIGNAL_TDI, true);
 	chain_Mock_jtag_Clock();
 	chain_Mock_jtag_Set(JTAG_SIGNAL_TDI, false);
-	
+
 	for(count = 1; count < chain_ir_len; ++count)
 	{
 		chain_Mock_jtag_Clock();
@@ -95,8 +95,8 @@ bool chain_TestFakeChain()
 
 		//get the TDO signal state and store it
 		unsigned int res = 0;
-		
-		
+
+
 		if(chain_Mock_jtag_Get(JTAG_SIGNAL_TDO))
 		{
 			res = 1;
@@ -114,21 +114,21 @@ bool chain_TestFakeChain()
 	chain_reg_head = 0;
 	for(count = 0; count < 16; ++count)
 	{
-		chain_Mock_jtag_Set(JTAG_SIGNAL_TDI, true);		
+		chain_Mock_jtag_Set(JTAG_SIGNAL_TDI, true);
 		chain_Mock_jtag_Clock();	//shift from TDI to TDO
-		chain_Mock_jtag_Set(JTAG_SIGNAL_TDI, false);		
+		chain_Mock_jtag_Set(JTAG_SIGNAL_TDI, false);
 		chain_Mock_jtag_Clock();	//shift from TDI to TDO
 	}
 	ASSERT(*((uint32_t* )dr) == 0x55555555, "DR didn't match: %08X %08X", dr, 0x55555555);
-	
+
 	chain_dr_len = 33;	//increase the bit count, now the bit positions should shift by one
 				//when it wraps.
 	chain_reg_head = 0;
 	for(count = 0; count < 33; ++count)	//run through twice to check the bit wrap
 	{
-		chain_Mock_jtag_Set(JTAG_SIGNAL_TDI, true);		
+		chain_Mock_jtag_Set(JTAG_SIGNAL_TDI, true);
 		chain_Mock_jtag_Clock();	//shift from TDI to TDO
-		chain_Mock_jtag_Set(JTAG_SIGNAL_TDI, false);		
+		chain_Mock_jtag_Set(JTAG_SIGNAL_TDI, false);
 		chain_Mock_jtag_Clock();	//shift from TDI to TDO
 	}
 	ASSERT(*((uint32_t* )dr) == 0xAAAAAAAA, "DR didn't match: %08X %08X", dr, 0xAAAAAAAA);
@@ -145,7 +145,7 @@ bool chain_TestFakeChain()
  * The contents of the selected register (instruction or data) are shifted out
  * of TDO on the falling edge of TCK. Values presented at TDI are clocked into
  * the selected register (instruction or test data) on a rising edge of TCK.
- * 
+ *
  * When clock is called the line is already in a low state and the first bit
  * of the selected register has been clocked out.
  */
@@ -166,7 +166,7 @@ void chain_Mock_jtag_Clock()
 		{
 			usage_error = 5; //IR was selected when no IR was present (ie: it shouldn't have been used)
 		}
-	} 
+	}
 	else if (TAPState == JTAGTAP_STATE_DR_SHIFT)
 	{
 		if(chain_dr != NULL)
@@ -195,7 +195,7 @@ void chain_Mock_jtag_Clock()
 	{
 		chain[index_byte] |= (1<< index_bit);		//store TDI
 	}
-	
+
 	//adjust the index
 	chain_reg_head = (chain_reg_head+1) % chain_len;	//increment and wrap bit index
 
@@ -208,7 +208,7 @@ void chain_Mock_jtag_Clock()
 /**
  * @brief Fake state transitions
  *
- * We don't need to walk the state table, just reset some counters based on 
+ * We don't need to walk the state table, just reset some counters based on
  * the state chosen.
  * Because the clock ends low after the state transition, the first bit of the
  * selected register needs to be clocked out.
@@ -299,7 +299,7 @@ void chain_Mock_jtag_Set(jtag_Signal sig, bool state)
 bool chain_TestDeviceCount()
 {
 	char devicecount_ir[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};		//Up to 48 bits of IR
-	char devicecount_dr[] = {0x00};	//Up to 8 bits of BYPASS data register	
+	char devicecount_dr[] = {0x00};	//Up to 8 bits of BYPASS data register
 
 	//fake chain setup
 	chain_ir = devicecount_ir;
@@ -336,7 +336,7 @@ bool chain_TestChainIRLength()
 	chain_ir = chainirlen_ir;
 	chain_ir_len = 47;	//seems like a good length...
 	chain_dr = NULL;	//DR isn't used
-	chain_dr_len = 0;	
+	chain_dr_len = 0;
 	usage_error = 0;
 
 	//module setup and test
@@ -373,7 +373,7 @@ bool chain_TestResetDRIDCode()
 		{ 0x00, 0x00, 0x00, 0x00 },	//BYPASS
 		{ 0x93, 0x20, 0xC2, 0x21 },	//Xilinx XCS500E
 	};
-	uint32_t IDCodes[] = { 0x4BA00477, 0x15946009, 0, 0x020B20DD, 0x028140DD, 0, 0, 0x21C22093 }; 
+	uint32_t IDCodes[] = { 0x4BA00477, 0x15946009, 0, 0x020B20DD, 0x028140DD, 0, 0, 0x21C22093 };
 	const unsigned int tests = 8;
 	unsigned int test = 0;
 
@@ -387,7 +387,7 @@ bool chain_TestResetDRIDCode()
 		//set up the fake DR
 		chain_dr = IDTests_dr[test];
 		chain_dr_len = (IDTests_dr[test][0] == 0x00 ? 1 : 32);
-	
+
 		//Set the chain state so TDO is the right value
 		chain_Mock_jtagTAP_SetState(JTAGTAP_STATE_DR_SHIFT);
 
@@ -397,7 +397,7 @@ bool chain_TestResetDRIDCode()
 	}
 	ASSERT(usage_error == 0, "Usage Error: %i", usage_error);
 	return true;
-}	
+}
 
 /**
  * @brief Test the function for finding an IDCODEs from a reset device chain
@@ -408,8 +408,8 @@ bool chain_TestResetDRIDCode()
 bool chain_TestResetDRIDCodes()
 {
 	//ID codes we want to test
-	char IDTests_dr[] = { 0x77, 0x04, 0xA0, 0x4B, 0x09, 0x60, 0x94, 0x15, 0xBA, 0x41, 0x16, 0x04, 0xBA, 0x81, 0x02, 0x05, 0x98, 0x04, 0x11, 0x0E, 0x01}; 
-	uint32_t IDCodes[] = { 0x4BA00477, 0x15946009, 0, 0x020B20DD, 0x028140DD, 0, 0, 0x21C22093 }; 
+	char IDTests_dr[] = { 0x77, 0x04, 0xA0, 0x4B, 0x09, 0x60, 0x94, 0x15, 0xBA, 0x41, 0x16, 0x04, 0xBA, 0x81, 0x02, 0x05, 0x98, 0x04, 0x11, 0x0E, 0x01};
+	uint32_t IDCodes[] = { 0x4BA00477, 0x15946009, 0, 0x020B20DD, 0x028140DD, 0, 0, 0x21C22093 };
 	const unsigned int tests = 8;
 	unsigned int test = 0;
 

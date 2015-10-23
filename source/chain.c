@@ -62,7 +62,7 @@ static bool chain_findIRLength()
 	//set TDI high and clock it through the chain in IR_SHIFT
 	jtag_Set(JTAG_SIGNAL_TDI, true);
 	jtagTAP_SetState(JTAGTAP_STATE_IR_SHIFT);
-	
+
 	for(count = 0; count < CHAIN_MAX_IRLEN; ++count)
 	{
 		jtag_Clock();
@@ -111,7 +111,7 @@ static bool chain_findDevices()
 	//get the TAP into the right state and set TDI high
 	jtagTAP_SetState(JTAGTAP_STATE_IR_SHIFT);
 	jtag_Set(JTAG_SIGNAL_TDI, true);
- 
+
 	//load BYPASS into every device in the chain (TDI = all ones)
 	for(count = 0; count < chain_IRLength; ++count)
 	{
@@ -155,7 +155,7 @@ uint32_t chain_findIDCode()
 
 		//shift in all 32 bits of the code
 		for(count = 0; count < 32; ++count)
-		{	
+		{
 			idcode >>= 1;
 			idcode |= (jtag_Get(JTAG_SIGNAL_TDO) ? 0x80000000 : 0);
 			jtag_Clock();
@@ -169,7 +169,7 @@ uint32_t chain_findIDCode()
 	}
 	return idcode;
 }
- 
+
 /**
  *@brief Detects the devices on the chain
  *
@@ -203,7 +203,7 @@ bool chain_Detect()
 			{
 				message_Write(MESSAGE_LEVEL_GENERAL, "[+]  Device %i - BYPASS\r\n", device +1);
 			}
-		} 		
+		}
 	}
 	return success;
 }

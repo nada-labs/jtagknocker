@@ -22,17 +22,17 @@
 
 #include "../source/comprocessor.c"
 
-/** 
+/**
  * A pointer to what should be received by the mock execute function
  */
 static char *expected_Execute;
 /**
  * The expected length of the buffer passed for execution
  */
-static unsigned int expected_ExecuteLen;	
+static unsigned int expected_ExecuteLen;
 
 /**
- * -2 wrong length was passed 
+ * -2 wrong length was passed
  * -1 if the wrong data was passed
  * 0 if not called
  * 1 if correct
@@ -44,7 +44,7 @@ static int result_Execute;
  */
 void comproc_Mock_comexec_Execute(char *buffer, unsigned int length)
 {
-	if(strncmp(buffer, expected_Execute, length) == 0)	
+	if(strncmp(buffer, expected_Execute, length) == 0)
 	{
 		result_Execute = 1;
 	}
@@ -86,7 +86,7 @@ bool comproc_TestProcess()
 	expected_Execute = "test one\r\n";
 	expected_ExecuteLen = 10;
 	result_Execute = 0;
-	
+
 	comproc_Process("test one\r\n", 10);
 	ASSERT(result_Execute == 1, "execute failed: %i", result_Execute);
 	ASSERT(comproc_BufferLength == 0, "buffer length not reset");
@@ -114,7 +114,7 @@ bool comproc_TestProcessToLower()
 	expected_Execute = "test one 2 three\r\n";
 	expected_ExecuteLen = 18;
 	result_Execute = 0;
-	
+
 	comproc_Process("tEst ONe 2 THREE\r\n", 18);
 	ASSERT(result_Execute == 1, "execute failed: %i", result_Execute);
 
@@ -125,7 +125,7 @@ bool comproc_TestProcessToLower()
  * @brief Test backspace and delete remove characters
  *
  * The backspace and delete characters should remove previous input from the
- * command buffer, one byte per instance. The length of the buffer should 
+ * command buffer, one byte per instance. The length of the buffer should
  * never go below zero
  */
 bool comproc_TestProcessBSDel()
@@ -135,7 +135,7 @@ bool comproc_TestProcessBSDel()
 	expected_Execute = "test one 2 three\r\n";
 	expected_ExecuteLen = 18;
 	result_Execute = 0;
-	
+
 	comproc_Process("tEstc6\b\b Op\x7FNe 2 THREE\r\n", 24);
 	ASSERT(result_Execute == 1, "execute failed: %i", result_Execute);
 
@@ -149,7 +149,7 @@ bool comproc_TestProcessBSDel()
 /**
  * @brief Test many small packets combine into a valid command
  *
- * Many small packets should be able to be added together to make a 
+ * Many small packets should be able to be added together to make a
  * valid command
  */
 bool comproc_TestProcessSmallPackets()
@@ -183,7 +183,7 @@ bool comproc_TestProcessMultiCommands()
 	expected_Execute = "test one 2 three\r\n";
 	expected_ExecuteLen = 18;
 	result_Execute = 0;
-	
+
 	comproc_Process("test one 2 three\r\n", 18);
 	ASSERT(result_Execute == 1, "execute failed: %i", result_Execute);
 	result_Execute = 0;

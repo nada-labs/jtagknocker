@@ -53,7 +53,7 @@ bool jtagTAP_TestInitilization()
  * @brief Test the first state transition
  *
  * When transitioning from UNKNOWN to a state, the TAP should be reset.
- * If TRST is assigned, that signal should be used. Otherwise the TAP 
+ * If TRST is assigned, that signal should be used. Otherwise the TAP
  * should be clocked 5 times with TMS high to enter into the RESET state.
  */
 bool jtagTAP_TestTxFromUnknown()
@@ -65,7 +65,7 @@ bool jtagTAP_TestTxFromUnknown()
 	InvalidSignal = false;
 
 	jtagTAP_Init();
-	
+
 	//Test
 	jtagTAP_SetState(JTAGTAP_STATE_IDLE);
 
@@ -82,7 +82,7 @@ bool jtagTAP_TestTxFromUnknown()
 	TRSTChanged = 0;
 
 	jtagTAP_Init();
-	
+
 	//Test
 	jtagTAP_SetState(JTAGTAP_STATE_IDLE);
 
@@ -100,8 +100,8 @@ bool jtagTAP_TestTxFromUnknown()
 /**
  * @brief Test the RESET transitions
  *
- * When transitioning from a state to RESET, the TAP should walk the states 
- * and finish at reset. If TRST is assigned, that signal should be used and 
+ * When transitioning from a state to RESET, the TAP should walk the states
+ * and finish at reset. If TRST is assigned, that signal should be used and
  * the state set as RESET with TMS high.
  */
 bool jtagTAP_TestReset()
@@ -126,7 +126,7 @@ bool jtagTAP_TestReset()
 	HasTRST = true;
 	TMSStateTx = 0x0FFFFFF0;
 	TRSTChanged = 0;
-	
+
 	//Test
 	TAPState = JTAGTAP_STATE_DR_SHIFT;
 	jtagTAP_SetState(JTAGTAP_STATE_RESET);
