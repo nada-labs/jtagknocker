@@ -16,13 +16,14 @@ GDB := $(CROSS_COMPILE)gdb
 
 TARGET := $(shell $(CC) -v 2>&1 | grep Target | cut -d " " -f 2)-$(DEVICE)
 
-.PHONY: all clean jtagknocker test docs
+.PHONY: all clean jtagknocker test docs upload
 
 all: jtagknocker
 
 #Get OpenCM3 setup correctly
 SRCLIBDIR=libopencm3
 include libopencm3/ld/Makefile.linker
+ROM_BASE := $(shell echo $(CFLAGS) | grep -Eo "ROM_OFF=0x[0-9A-Fa-f]{8}" | sed -e 's/ROM_OFF=//')
 
 SOURCE_OBJS := $(addprefix build/$(TARGET)/, $(patsubst %c,%o,$(shell find source -name '*.c')))
 SOURCE_CFLAGS := -c -Ilibopencm3/include -O2 -ffunction-sections -D$(PLATFORM)=1
@@ -32,33 +33,47 @@ TEST_OBJS := $(addprefix build/$(TARGET)/, $(patsubst %c,%o,$(shell find test -n
 TEST_CFLAGS := -c -Ilibopencm3/include -O2 -ffunction-sections -D$(PLATFORM)=1
 TEST_LDFLAGS := -Llibopencm3/lib -T$(LDSCRIPT) -gc-sections -nostartfiles
 
-jtagknocker: build/$(TARGET)/jtagknocker.elf $(LDSCRIPT)
+jtagknocker: build/$(TARGET)/jtagknocker.bin
 
-test: build/$(TARGET)/test.elf $(LDSCRIPT)
+test: build/$(TARGET)/test.bin
 
 -include $(SOURCE_OBJS:.o=.d)
 
-build/$(TARGET)/jtagknocker.elf: $(SOURCE_OBJS)
-	@echo "   LD $@"
-	@$(CC) -o $@ $(CFLAGS) $(SOURCE_LDFLAGS) $^ $(LDFLAGS)
+build/$(TARGET)/jtagknocker.elf: $(SOURCE_OBJS) $(LDSCRIPT)
+	@echo "      LD $@"
+	@$(CC) -o $@ $(CFLAGS) $(SOURCE_LDFLAGS) $(SOURCE_OBJS) $(LDFLAGS)
 
 build/$(TARGET)/source/%.o: source/%.c
-	@echo "   CC $@"
+	@echo "      CC $@"
 	@mkdir -p $(dir $@)
 	@$(CC) $(SOURCE_CFLAGS) $(CFLAGS) -c -MMD -MP -o $@ $<
 
 clean:
 	@rm -rf build
 
-build/$(TARGET)/test.elf: $(TEST_OBJS)
-	@echo "   LD $@"
-	@$(CC) -o $@ $(CFLAGS) $(TEST_LDFLAGS) $^ $(LDFLAGS)
+build/$(TARGET)/test.elf: $(TEST_OBJS) $(LDSCRIPT)
+	@echo "      LD $@"
+	@$(CC) -o $@ $(CFLAGS) $(TEST_LDFLAGS) $(TEST_OBJS) $(LDFLAGS)
 
 build/$(TARGET)/test/%.o: test/%.c
-	@echo "   CC $@"
+	@echo "      CC $@"
 	@mkdir -p $(dir $@)
 	@$(CC) $(TEST_CFLAGS) $(CFLAGS) -c -MMD -MP -o $@ $<
 
+%.bin: %.elf
+	@echo " OBJCOPY $@"
+	@$(OBJCOPY) -O binary -j .text $< $@
+
 docs:
-	@echo " DOCS"
+	@echo "    DOCS"
 	@cd doc && doxygen Doxyfile
+
+# Assumes st-flash is installed.
+upload: build/$(TARGET)/jtagknocker.bin
+	@echo "  UPLOAD $<"
+	@st-flash write $< $(ROM_BASE)
+
+test-upload: build/$(TARGET)/test.bin
+	@echo "  UPLOAD $<"
+	@st-flash write $< $(ROM_BASE)
+
